@@ -4,7 +4,7 @@ from pathlib import Path
 import streamlit as st
 
 from services.gemini_client import evaluate_answer
-from services.question_bank import advance_question, get_current_question
+from services.question_bank import advance_question, get_current_question, previous_question
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 _data = json.loads((Path(__file__).parent / "data" / "topics.json").read_text())
@@ -19,9 +19,25 @@ st.caption("Practice technical interviews with AI-powered evaluation")
 
 # ── Session state defaults ────────────────────────────────────────────────────
 for key, default in [("question", None), ("q_index", 0), ("q_total", 0),
-                     ("evaluation", None), ("history", []), ("answer_key", 0)]:
+                     ("evaluation", None), ("history", []), ("answer_key", 0),
+                     ("cache", {})]:
     if key not in st.session_state:
         st.session_state[key] = default
+
+
+def _cache_key(topic_key, idx):
+    return f"{topic_key}::{idx}"
+
+
+def _load_from_cache(topic_key, idx):
+    """Restore saved answer text and evaluation for a (topic, idx) pair."""
+    entry = st.session_state.cache.get(_cache_key(topic_key, idx))
+    st.session_state.evaluation = entry["evaluation"] if entry else None
+    st.session_state.answer_key += 1
+    # Pre-populate the (new) answer widget value via session_state before it is created.
+    st.session_state[f"answer_{st.session_state.answer_key}"] = (
+        entry["answer"] if entry else ""
+    )
 
 # ── Controls ──────────────────────────────────────────────────────────────────
 topic_label = st.selectbox("Topic", TOPIC_LABELS)
@@ -33,8 +49,7 @@ if st.button("▶️ Start / Continue", use_container_width=True):
         st.session_state.question = q
         st.session_state.q_index = idx
         st.session_state.q_total = total
-        st.session_state.evaluation = None
-        st.session_state.answer_key += 1
+        _load_from_cache(topic, idx)
     except Exception as e:
         st.error(f"Error: {e}")
 
@@ -75,7 +90,18 @@ if st.session_state.question:
         key=answer_widget_key,
     )
 
-    col_eval, col_next = st.columns(2)
+    col_prev, col_eval, col_refresh, col_next = st.columns(4)
+
+    if col_prev.button("⬅️ Previous question", use_container_width=True):
+        try:
+            q, new_idx, total = previous_question(topic)
+            st.session_state.question = q
+            st.session_state.q_index = new_idx
+            st.session_state.q_total = total
+            _load_from_cache(topic, new_idx)
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error: {e}")
 
     if col_eval.button("✅ Evaluate answer", use_container_width=True):
         if not st.session_state[answer_widget_key].strip():
@@ -87,6 +113,10 @@ if st.session_state.question:
                     answer_text = st.session_state[answer_widget_key]
                     result = evaluate_answer(question_text, answer_text)
                     st.session_state.evaluation = result
+                    st.session_state.cache[_cache_key(topic, idx)] = {
+                        "answer": answer_text,
+                        "evaluation": result,
+                    }
                     st.session_state.history.append({
                         "topic": topic,
                         "question": q,
@@ -98,14 +128,21 @@ if st.session_state.question:
                 except Exception as e:
                     st.error(f"Evaluation error: {e}")
 
+    if col_refresh.button("🔄 Clear answer", use_container_width=True,
+                          help="Clear LLM evaluation and your answer for this question"):
+        st.session_state.cache.pop(_cache_key(topic, idx), None)
+        st.session_state.evaluation = None
+        st.session_state.answer_key += 1
+        st.session_state[f"answer_{st.session_state.answer_key}"] = ""
+        st.rerun()
+
     if col_next.button("➡️ Next question", use_container_width=True):
         try:
-            q, idx, total = advance_question(topic)
+            q, new_idx, total = advance_question(topic)
             st.session_state.question = q
-            st.session_state.q_index = idx
+            st.session_state.q_index = new_idx
             st.session_state.q_total = total
-            st.session_state.evaluation = None
-            st.session_state.answer_key += 1
+            _load_from_cache(topic, new_idx)
             st.rerun()
         except Exception as e:
             st.error(f"Error: {e}")
