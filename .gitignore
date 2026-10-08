@@ -30,3 +30,5 @@ Thumbs.db
 
 # Progress (optional: remove this line if you want to track progress in git)
 data/progress.json
+
+.junie/
