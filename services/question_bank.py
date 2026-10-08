@@ -39,3 +39,15 @@ def advance_question(topic: str) -> tuple[dict, int, int]:
     progress[topic] = next_idx
     _save_progress(progress)
     return questions[next_idx], next_idx, len(questions)
+
+
+def previous_question(topic: str) -> tuple[dict, int, int]:
+    """Save previous index to disk and return (question_dict, new_index, total)."""
+    questions = _load_bank().get(topic, [])
+    if not questions:
+        raise ValueError(f"No questions found for {topic}")
+    progress = _load_progress()
+    prev_idx = (progress.get(topic, 0) - 1) % len(questions)
+    progress[topic] = prev_idx
+    _save_progress(progress)
+    return questions[prev_idx], prev_idx, len(questions)
