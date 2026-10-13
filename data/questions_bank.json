@@ -1,91 +1,460 @@
 {
   "Python": [
-    {"en": "Python - a language that is interpreted or compiled?", "uk": "Python — інтерпретована чи компільована мова?"},
-    {"en": "What is a dynamically typed language?", "uk": "Що таке динамічно типізована мова?"},
-    {"en": "What are Literals in Python and give examples of different Literals?", "uk": "Що таке літерали в Python і наведи приклади різних літералів?"},
-    {"en": "What are Keywords in Python?", "uk": "Що таке ключові слова в Python?"},
-    {"en": "Is indentation required in Python?", "uk": "Чи обов'язкові відступи в Python?"},
-    {"en": "What are mutable and immutable data types?", "uk": "Що таке змінювані та незмінювані типи даних?"},
-    {"en": "What are the data types and what is the difference between list and tuple, when to use them?", "uk": "Які є типи даних і в чому різниця між list і tuple, коли їх використовувати?"},
-    {"en": "How to use built-in collections (list, set, dictionary)?", "uk": "Як використовувати вбудовані колекції (list, set, dictionary)?"},
-    {"en": "The difference between is and ==?", "uk": "У чому різниця між is та ==?"},
-    {"en": "What is type annotation?", "uk": "Що таке анотація типів?"},
-    {"en": "What is PEP 8 and why is it important?", "uk": "Що таке PEP 8 і чому він важливий?"},
-    {"en": "What is a virtual environment?", "uk": "Що таке віртуальне середовище?"},
-    {"en": "What is PIP?", "uk": "Що таке PIP?"},
-    {"en": "What analyzers (linters) do you know?", "uk": "Які аналізатори (лінтери) ти знаєш?"},
-    {"en": "What is docstring in Python?", "uk": "Що таке docstring у Python?"},
-    {"en": "Explain split() and join() functions in Python?", "uk": "Поясни функції split() та join() у Python?"},
-    {"en": "What is slicing in Python?", "uk": "Що таке зрізи (slicing) у Python?"},
-    {"en": "What are negative indexes and why are they used?", "uk": "Що таке від'ємні індекси і навіщо вони використовуються?"},
-    {"en": "What are functions in Python?", "uk": "Що таке функції в Python?"},
-    {"en": "What is the scope of variables?", "uk": "Що таке область видимості змінних?"},
-    {"en": "What is pass in Python?", "uk": "Що таке pass у Python?"},
-    {"en": "What is break and continue in Python?", "uk": "Що таке break та continue у Python?"},
-    {"en": "What are lambda functions?", "uk": "Що таке lambda-функції?"},
-    {"en": "What do *args, **kwargs mean and how are they used?", "uk": "Що означають *args, **kwargs і як вони використовуються?"},
-    {"en": "What are local variables and global variables in Python?", "uk": "Що таке локальні та глобальні змінні в Python?"},
-    {"en": "How do dict comprehension, list comprehension and set comprehension work?", "uk": "Як працюють dict comprehension, list comprehension та set comprehension?"},
-    {"en": "What is closure in Python?", "uk": "Що таке замикання (closure) у Python?"},
-    {"en": "How do decorators work?", "uk": "Як працюють декоратори?"},
-    {"en": "Is it possible to use several decorators for one function?", "uk": "Чи можна використовувати кілька декораторів для однієї функції?"},
-    {"en": "Is it possible to create a decorator from a class?", "uk": "Чи можна створити декоратор з класу?"},
-    {"en": "What is a class, an iterator, a generator?", "uk": "Що таке клас, ітератор, генератор?"},
-    {"en": "What is the difference between iterators and generators?", "uk": "У чому різниця між ітераторами та генераторами?"},
-    {"en": "How to create an object in Python, what is __init__?", "uk": "Як створити об'єкт у Python, що таке __init__?"},
-    {"en": "What is the use of self in Python?", "uk": "Навіщо використовується self у Python?"},
-    {"en": "What is the difference between staticmethod and classmethod?", "uk": "У чому різниця між staticmethod та classmethod?"},
-    {"en": "What is del in Python?", "uk": "Що таке del у Python?"},
-    {"en": "What are the types of imports?", "uk": "Які є типи імпортів?"},
-    {"en": "What are modules and packages in Python?", "uk": "Що таке модулі та пакети в Python?"},
-    {"en": "What is if __name__ == '__main__' in Python?", "uk": "Що таке if __name__ == '__main__' у Python?"},
-    {"en": "What is the difference between procedural and object-oriented programming paradigms?", "uk": "У чому різниця між процедурною та об'єктно-орієнтованою парадигмами програмування?"},
-    {"en": "What are the basic principles of OOP (inheritance, encapsulation, polymorphism)?", "uk": "Які основні принципи ООП (наслідування, інкапсуляція, поліморфізм)?"},
-    {"en": "How do you access parent members in the child class?", "uk": "Як отримати доступ до членів батьківського класу в дочірньому класі?"},
-    {"en": "What is multiple inheritance?", "uk": "Що таке множинне наслідування?"},
-    {"en": "What is multilevel inheritance?", "uk": "Що таке багаторівневе наслідування?"},
-    {"en": "How will you check if a class is a child of another class?", "uk": "Як перевірити, чи є клас дочірнім від іншого класу?"},
-    {"en": "What is MRO (Method Resolution Order)?", "uk": "Що таке MRO (порядок розв'язання методів)?"},
-    {"en": "What are global, protected and private attributes in Python?", "uk": "Що таке глобальні, захищені та приватні атрибути в Python?"},
-    {"en": "Why use underscores in class attribute names?", "uk": "Навіщо використовувати підкреслення в іменах атрибутів класу?"},
-    {"en": "What is the use of help() and dir() functions?", "uk": "Навіщо використовуються функції help() та dir()?"},
-    {"en": "What are properties and descriptors?", "uk": "Що таке властивості (properties) та дескриптори?"},
-    {"en": "What are exceptions?", "uk": "Що таке виключення (exceptions)?"},
-    {"en": "What do try, except, else and finally mean?", "uk": "Що означають try, except, else та finally?"},
-    {"en": "What is the order of except keywords?", "uk": "Який порядок блоків except?"},
-    {"en": "How to get the memory address of a Python object?", "uk": "Як отримати адресу пам'яті об'єкта Python?"},
-    {"en": "How does Python collect garbage (useless objects)?", "uk": "Як Python збирає сміття (непотрібні об'єкти)?"},
-    {"en": "What are different modes for working with files?", "uk": "Які є режими роботи з файлами?"},
-    {"en": "How do context managers work?", "uk": "Як працюють контекстні менеджери?"},
-    {"en": "What is TDD?", "uk": "Що таке TDD?"},
-    {"en": "What is unittest/pytest in Python?", "uk": "Що таке unittest/pytest у Python?"},
-    {"en": "What are built-in popular modules in Python?", "uk": "Які є популярні вбудовані модулі Python?"},
-    {"en": "How to work with dates in Python?", "uk": "Як працювати з датами в Python?"},
-    {"en": "How to work with float numbers with better precision?", "uk": "Як працювати з числами з плаваючою точкою з більшою точністю?"},
-    {"en": "What are the main popular packages (requests, pytest, etc)?", "uk": "Які основні популярні пакети (requests, pytest тощо)?"},
-    {"en": "What do you know about the collections module and other built-in modules?", "uk": "Що ти знаєш про модуль collections та інші вбудовані модулі?"},
-    {"en": "What is a hash function?", "uk": "Що таке хеш-функція?"}
+    {
+      "en": "Python - a language that is interpreted or compiled?",
+      "uk": "Python — інтерпретована чи компільована мова?"
+    },
+    {
+      "en": "What is a dynamically typed language?",
+      "uk": "Що таке динамічно типізована мова?"
+    },
+    {
+      "en": "What are Literals in Python and give examples of different Literals?",
+      "uk": "Що таке літерали в Python і наведи приклади різних літералів?"
+    },
+    {
+      "en": "What are Keywords in Python?",
+      "uk": "Що таке ключові слова в Python?"
+    },
+    {
+      "en": "Is indentation required in Python?",
+      "uk": "Чи обов'язкові відступи в Python?"
+    },
+    {
+      "en": "What are mutable and immutable data types?",
+      "uk": "Що таке змінювані та незмінювані типи даних?"
+    },
+    {
+      "en": "What are the data types and what is the difference between list and tuple, when to use them?",
+      "uk": "Які є типи даних і в чому різниця між list і tuple, коли їх використовувати?"
+    },
+    {
+      "en": "How to use built-in collections (list, set, dictionary)?",
+      "uk": "Як використовувати вбудовані колекції (list, set, dictionary)?"
+    },
+    {
+      "en": "The difference between is and ==?",
+      "uk": "У чому різниця між is та ==?"
+    },
+    {
+      "en": "What is type annotation?",
+      "uk": "Що таке анотація типів?"
+    },
+    {
+      "en": "What is PEP 8 and why is it important?",
+      "uk": "Що таке PEP 8 і чому він важливий?"
+    },
+    {
+      "en": "What is a virtual environment?",
+      "uk": "Що таке віртуальне середовище?"
+    },
+    {
+      "en": "What is PIP?",
+      "uk": "Що таке PIP?"
+    },
+    {
+      "en": "What analyzers (linters) do you know?",
+      "uk": "Які аналізатори (лінтери) ти знаєш?"
+    },
+    {
+      "en": "What is docstring in Python?",
+      "uk": "Що таке docstring у Python?"
+    },
+    {
+      "en": "Explain split() and join() functions in Python?",
+      "uk": "Поясни функції split() та join() у Python?"
+    },
+    {
+      "en": "What is slicing in Python?",
+      "uk": "Що таке зрізи (slicing) у Python?"
+    },
+    {
+      "en": "What are negative indexes and why are they used?",
+      "uk": "Що таке від'ємні індекси і навіщо вони використовуються?"
+    },
+    {
+      "en": "What are functions in Python?",
+      "uk": "Що таке функції в Python?"
+    },
+    {
+      "en": "What is the scope of variables?",
+      "uk": "Що таке область видимості змінних?"
+    },
+    {
+      "en": "What is pass in Python?",
+      "uk": "Що таке pass у Python?"
+    },
+    {
+      "en": "What is break and continue in Python?",
+      "uk": "Що таке break та continue у Python?"
+    },
+    {
+      "en": "What are lambda functions?",
+      "uk": "Що таке lambda-функції?"
+    },
+    {
+      "en": "What do *args, **kwargs mean and how are they used?",
+      "uk": "Що означають *args, **kwargs і як вони використовуються?"
+    },
+    {
+      "en": "What are local variables and global variables in Python?",
+      "uk": "Що таке локальні та глобальні змінні в Python?"
+    },
+    {
+      "en": "How do dict comprehension, list comprehension and set comprehension work?",
+      "uk": "Як працюють dict comprehension, list comprehension та set comprehension?"
+    },
+    {
+      "en": "What is closure in Python?",
+      "uk": "Що таке замикання (closure) у Python?"
+    },
+    {
+      "en": "How do decorators work?",
+      "uk": "Як працюють декоратори?"
+    },
+    {
+      "en": "Is it possible to use several decorators for one function?",
+      "uk": "Чи можна використовувати кілька декораторів для однієї функції?"
+    },
+    {
+      "en": "Is it possible to create a decorator from a class?",
+      "uk": "Чи можна створити декоратор з класу?"
+    },
+    {
+      "en": "What is a class, an iterator, a generator?",
+      "uk": "Що таке клас, ітератор, генератор?"
+    },
+    {
+      "en": "What is the difference between iterators and generators?",
+      "uk": "У чому різниця між ітераторами та генераторами?"
+    },
+    {
+      "en": "How to create an object in Python, what is __init__?",
+      "uk": "Як створити об'єкт у Python, що таке __init__?"
+    },
+    {
+      "en": "What is the use of self in Python?",
+      "uk": "Навіщо використовується self у Python?"
+    },
+    {
+      "en": "What is the difference between staticmethod and classmethod?",
+      "uk": "У чому різниця між staticmethod та classmethod?"
+    },
+    {
+      "en": "What is del in Python?",
+      "uk": "Що таке del у Python?"
+    },
+    {
+      "en": "What are the types of imports?",
+      "uk": "Які є типи імпортів?"
+    },
+    {
+      "en": "What are modules and packages in Python?",
+      "uk": "Що таке модулі та пакети в Python?"
+    },
+    {
+      "en": "What is if __name__ == '__main__' in Python?",
+      "uk": "Що таке if __name__ == '__main__' у Python?"
+    },
+    {
+      "en": "What is the difference between procedural and object-oriented programming paradigms?",
+      "uk": "У чому різниця між процедурною та об'єктно-орієнтованою парадигмами програмування?"
+    },
+    {
+      "en": "What are the basic principles of OOP (inheritance, encapsulation, polymorphism)?",
+      "uk": "Які основні принципи ООП (наслідування, інкапсуляція, поліморфізм)?"
+    },
+    {
+      "en": "How do you access parent members in the child class?",
+      "uk": "Як отримати доступ до членів батьківського класу в дочірньому класі?"
+    },
+    {
+      "en": "What is multiple inheritance?",
+      "uk": "Що таке множинне наслідування?"
+    },
+    {
+      "en": "What is multilevel inheritance?",
+      "uk": "Що таке багаторівневе наслідування?"
+    },
+    {
+      "en": "How will you check if a class is a child of another class?",
+      "uk": "Як перевірити, чи є клас дочірнім від іншого класу?"
+    },
+    {
+      "en": "What is MRO (Method Resolution Order)?",
+      "uk": "Що таке MRO (порядок розв'язання методів)?"
+    },
+    {
+      "en": "What are global, protected and private attributes in Python?",
+      "uk": "Що таке глобальні, захищені та приватні атрибути в Python?"
+    },
+    {
+      "en": "Why use underscores in class attribute names?",
+      "uk": "Навіщо використовувати підкреслення в іменах атрибутів класу?"
+    },
+    {
+      "en": "What is the use of help() and dir() functions?",
+      "uk": "Навіщо використовуються функції help() та dir()?"
+    },
+    {
+      "en": "What are properties and descriptors?",
+      "uk": "Що таке властивості (properties) та дескриптори?"
+    },
+    {
+      "en": "What are exceptions?",
+      "uk": "Що таке виключення (exceptions)?"
+    },
+    {
+      "en": "What do try, except, else and finally mean?",
+      "uk": "Що означають try, except, else та finally?"
+    },
+    {
+      "en": "What is the order of except keywords?",
+      "uk": "Який порядок блоків except?"
+    },
+    {
+      "en": "How to get the memory address of a Python object?",
+      "uk": "Як отримати адресу пам'яті об'єкта Python?"
+    },
+    {
+      "en": "How does Python collect garbage (useless objects)?",
+      "uk": "Як Python збирає сміття (непотрібні об'єкти)?"
+    },
+    {
+      "en": "What are different modes for working with files?",
+      "uk": "Які є режими роботи з файлами?"
+    },
+    {
+      "en": "How do context managers work?",
+      "uk": "Як працюють контекстні менеджери?"
+    },
+    {
+      "en": "What is TDD?",
+      "uk": "Що таке TDD?"
+    },
+    {
+      "en": "What is unittest/pytest in Python?",
+      "uk": "Що таке unittest/pytest у Python?"
+    },
+    {
+      "en": "What are built-in popular modules in Python?",
+      "uk": "Які є популярні вбудовані модулі Python?"
+    },
+    {
+      "en": "How to work with dates in Python?",
+      "uk": "Як працювати з датами в Python?"
+    },
+    {
+      "en": "How to work with float numbers with better precision?",
+      "uk": "Як працювати з числами з плаваючою точкою з більшою точністю?"
+    },
+    {
+      "en": "What are the main popular packages (requests, pytest, etc)?",
+      "uk": "Які основні популярні пакети (requests, pytest тощо)?"
+    },
+    {
+      "en": "What do you know about the collections module and other built-in modules?",
+      "uk": "Що ти знаєш про модуль collections та інші вбудовані модулі?"
+    },
+    {
+      "en": "What is a hash function?",
+      "uk": "Що таке хеш-функція?"
+    }
   ],
   "OOP": [
-    {"en": "What is OOP?", "uk": "Що таке ООП?"},
-    {"en": "Difference between Functional programming and OOP?", "uk": "Різниця між функціональним програмуванням та ООП?"},
-    {"en": "What are the basic concepts of OOP?", "uk": "Які основні концепції ООП?"},
-    {"en": "What is Encapsulation?", "uk": "Що таке інкапсуляція?"},
-    {"en": "What is Abstraction?", "uk": "Що таке абстракція?"},
-    {"en": "What is method overriding?", "uk": "Що таке перевизначення методів?"},
-    {"en": "What are the types of Inheritance in OOP?", "uk": "Які є типи наслідування в ООП?"},
-    {"en": "What is an object?", "uk": "Що таке об'єкт?"},
-    {"en": "What is a Method?", "uk": "Що таке метод?"},
-    {"en": "What is a class?", "uk": "Що таке клас?"},
-    {"en": "What are constructors?", "uk": "Що таке конструктори?"},
-    {"en": "What is inheritance?", "uk": "Що таке наслідування?"},
-    {"en": "What is multi-level inheritance?", "uk": "Що таке багаторівневе наслідування?"},
-    {"en": "What is hierarchical inheritance?", "uk": "Що таке ієрархічне наслідування?"},
-    {"en": "What is super()?", "uk": "Що таке super()?"},
-    {"en": "What is Polymorphism?", "uk": "Що таке поліморфізм?"},
-    {"en": "What is operator overloading?", "uk": "Що таке перевантаження операторів?"},
-    {"en": "What is the difference between public, private and protected access modifiers?", "uk": "У чому різниця між public, private та protected модифікаторами доступу?"},
-    {"en": "How to achieve data abstraction?", "uk": "Як досягти абстракції даних?"},
-    {"en": "What is ABC and abstractmethod?", "uk": "Що таке ABC та abstractmethod?"}
+    {
+      "en": "What is OOP?",
+      "uk": "Що таке ООП?"
+    },
+    {
+      "en": "Difference between Functional programming and OOP?",
+      "uk": "Різниця між функціональним програмуванням та ООП?"
+    },
+    {
+      "en": "What are the basic concepts of OOP?",
+      "uk": "Які основні концепції ООП?"
+    },
+    {
+      "en": "What is Encapsulation?",
+      "uk": "Що таке інкапсуляція?"
+    },
+    {
+      "en": "What is Abstraction?",
+      "uk": "Що таке абстракція?"
+    },
+    {
+      "en": "What is method overriding?",
+      "uk": "Що таке перевизначення методів?"
+    },
+    {
+      "en": "What are the types of Inheritance in OOP?",
+      "uk": "Які є типи наслідування в ООП?"
+    },
+    {
+      "en": "What is an object?",
+      "uk": "Що таке об'єкт?"
+    },
+    {
+      "en": "What is a Method?",
+      "uk": "Що таке метод?"
+    },
+    {
+      "en": "What is a class?",
+      "uk": "Що таке клас?"
+    },
+    {
+      "en": "What are constructors?",
+      "uk": "Що таке конструктори?"
+    },
+    {
+      "en": "What is inheritance?",
+      "uk": "Що таке наслідування?"
+    },
+    {
+      "en": "What is multi-level inheritance?",
+      "uk": "Що таке багаторівневе наслідування?"
+    },
+    {
+      "en": "What is hierarchical inheritance?",
+      "uk": "Що таке ієрархічне наслідування?"
+    },
+    {
+      "en": "What is super()?",
+      "uk": "Що таке super()?"
+    },
+    {
+      "en": "What is Polymorphism?",
+      "uk": "Що таке поліморфізм?"
+    },
+    {
+      "en": "What is operator overloading?",
+      "uk": "Що таке перевантаження операторів?"
+    },
+    {
+      "en": "What is the difference between public, private and protected access modifiers?",
+      "uk": "У чому різниця між public, private та protected модифікаторами доступу?"
+    },
+    {
+      "en": "How to achieve data abstraction?",
+      "uk": "Як досягти абстракції даних?"
+    },
+    {
+      "en": "What is ABC and abstractmethod?",
+      "uk": "Що таке ABC та abstractmethod?"
+    }
+  ],
+  "Computer Science": [
+    {
+      "en": "What happens after you enter a URL in the browser's address bar?",
+      "uk": "Що відбувається після введення URL в адресний рядок браузера?"
+    },
+    {
+      "en": "What is DNS and how does it work?",
+      "uk": "Що таке DNS і як він працює?"
+    },
+    {
+      "en": "What access protocols do you know?",
+      "uk": "Які ви знаєте протоколи доступу?"
+    },
+    {
+      "en": "What is the difference between HTTP and HTTPS?",
+      "uk": "У чому різниця між HTTP та HTTPS?"
+    },
+    {
+      "en": "What is the difference between TCP and UDP?",
+      "uk": "У чому різниця між TCP та UDP?"
+    },
+    {
+      "en": "What is SSH?",
+      "uk": "Що таке SSH?"
+    },
+    {
+      "en": "What is FTP?",
+      "uk": "Що таке FTP?"
+    },
+    {
+      "en": "What is a session?",
+      "uk": "Що таке сесія?"
+    },
+    {
+      "en": "What are cookies?",
+      "uk": "Що таке cookie?"
+    },
+    {
+      "en": "What is authorization?",
+      "uk": "Що таке авторизація?"
+    },
+    {
+      "en": "What is authentication?",
+      "uk": "Що таке аутентифікація?"
+    },
+    {
+      "en": "What is a web vulnerability?",
+      "uk": "Що таке вебвразливість?"
+    },
+    {
+      "en": "What types of web vulnerabilities are there?",
+      "uk": "Які бувають типи вебвразливостей?"
+    },
+    {
+      "en": "What is the difference between hashing and encryption?",
+      "uk": "У чому різниця між хешуванням та шифруванням?"
+    },
+    {
+      "en": "What does an HTTP request / response look like?",
+      "uk": "Як виглядає HTTP-запит / відповідь?"
+    },
+    {
+      "en": "What HTTP request methods are there and how do they differ?",
+      "uk": "Які є методи HTTP-запитів та яка між ними різниця?"
+    },
+    {
+      "en": "What is the difference between PUT and PATCH?",
+      "uk": "У чому різниця між PUT та PATCH?"
+    },
+    {
+      "en": "What is the HEAD method?",
+      "uk": "Що таке метод HEAD?"
+    },
+    {
+      "en": "What approaches to API design are there?",
+      "uk": "Які є підходи до проєктування API?"
+    },
+    {
+      "en": "What is a REST API?",
+      "uk": "Що таке REST API?"
+    },
+    {
+      "en": "What programming principles do you know?",
+      "uk": "Які ви знаєте принципи програмування?"
+    },
+    {
+      "en": "What is SOLID?",
+      "uk": "Що таке SOLID?"
+    },
+    {
+      "en": "What is DRY?",
+      "uk": "Що таке DRY?"
+    },
+    {
+      "en": "What is KISS?",
+      "uk": "Що таке KISS?"
+    },
+    {
+      "en": "What programming paradigms are there?",
+      "uk": "Які існують парадигми програмування?"
+    },
+    {
+      "en": "How do procedural and object-oriented programming differ?",
+      "uk": "Чим відрізняються процедурна та об'єктно-орієнтована парадигми програмування?"
+    },
+    {
+      "en": "What are design patterns?",
+      "uk": "Що таке патерни проєктування?"
+    },
+    {
+      "en": "What is an IP address?",
+      "uk": "Що таке IP-адреса?"
+    }
   ]
 }
