@@ -1,6 +1,16 @@
 {
   "topics": [
-    {"key": "Python", "label": "Python"},
-    {"key": "OOP", "label": "OOP"}
+    {
+      "key": "Python",
+      "label": "Python"
+    },
+    {
+      "key": "OOP",
+      "label": "OOP"
+    },
+    {
+      "key": "Computer Science",
+      "label": "Computer Science"
+    }
   ]
 }
