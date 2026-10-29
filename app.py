@@ -39,6 +39,16 @@ def _load_from_cache(topic_key, idx):
         entry["answer"] if entry else ""
     )
 
+
+def _save_answer_to_cache(topic_key, idx):
+    """Persist the currently typed answer (keeping any existing evaluation) for a (topic, idx) pair."""
+    current = st.session_state.get(f"answer_{st.session_state.answer_key}", "")
+    entry = st.session_state.cache.get(_cache_key(topic_key, idx)) or {}
+    st.session_state.cache[_cache_key(topic_key, idx)] = {
+        "answer": current,
+        "evaluation": entry.get("evaluation"),
+    }
+
 # ── Controls ──────────────────────────────────────────────────────────────────
 topic_label = st.selectbox("Topic", TOPIC_LABELS)
 topic = TOPIC_BY_LABEL[topic_label]
@@ -94,6 +104,7 @@ if st.session_state.question:
 
     if col_prev.button("⬅️ Previous question", use_container_width=True):
         try:
+            _save_answer_to_cache(topic, idx)
             q, new_idx, total = previous_question(topic)
             st.session_state.question = q
             st.session_state.q_index = new_idx
@@ -138,6 +149,7 @@ if st.session_state.question:
 
     if col_next.button("➡️ Next question", use_container_width=True):
         try:
+            _save_answer_to_cache(topic, idx)
             q, new_idx, total = advance_question(topic)
             st.session_state.question = q
             st.session_state.q_index = new_idx
