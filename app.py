@@ -4,10 +4,12 @@ from pathlib import Path
 import streamlit as st
 
 from services.gemini_client import evaluate_answer
-from services.question_bank import advance_question, get_current_question, previous_question
+from services.question_bank import advance_question, get_current_question, \
+    previous_question
 
 # ── Data ──────────────────────────────────────────────────────────────────────
-_data = json.loads((Path(__file__).parent / "data" / "topics.json").read_text())
+_data = json.loads(
+    (Path(__file__).parent / "data" / "topics.json").read_text())
 TOPICS = _data["topics"]
 TOPIC_LABELS = [t["label"] for t in TOPICS]
 TOPIC_BY_LABEL = {t["label"]: t["key"] for t in TOPICS}
@@ -48,6 +50,7 @@ def _save_answer_to_cache(topic_key, idx):
         "answer": current,
         "evaluation": entry.get("evaluation"),
     }
+
 
 # ── Controls ──────────────────────────────────────────────────────────────────
 topic_label = st.selectbox("Topic", TOPIC_LABELS)
@@ -198,7 +201,8 @@ if st.session_state.evaluation:
 # ── Session history ───────────────────────────────────────────────────────────
 if len(st.session_state.history) > 1:
     st.divider()
-    with st.expander(f"📜 Session history ({len(st.session_state.history)} entries)"):
+    with st.expander(
+            f"📜 Session history ({len(st.session_state.history)} entries)"):
         for i, entry in enumerate(reversed(st.session_state.history[:-1]), 1):
             ev = entry["evaluation"]
             score = ev.get("score", "—")
