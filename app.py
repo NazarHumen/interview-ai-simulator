@@ -14,30 +14,34 @@ TOPIC_LABELS = [t["label"] for t in TOPICS]
 TOPIC_BY_LABEL = {t["label"]: t["key"] for t in TOPICS}
 
 TOPIC_COLORS = {
-    "Python": "#6366f1",
-    "OOP": "#ec4899",
-    "Computer Science": "#10b981",
+    "Python": "#ffffff",
+    "OOP": "#aaaaaa",
+    "Computer Science": "#888888",
 }
 
 # ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="AI Interview Simulator", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="AI Interview Simulator", page_icon=":material/terminal:", layout="wide")
 
 # ── Custom CSS theme ──────────────────────────────────────────────────────────
 _CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
 
-:root {
-  --bg-start: #0f172a;
-  --bg-end: #1e293b;
-  --accent: #6366f1;
-  --glass: rgba(255, 255, 255, 0.06);
+:root, .stApp {
+  --bg-start: #000000;
+  --bg-end: #0d0d0d;
+  --surface-dark: #080808;
+  --surface-hover: #121212;
+  --primary-color: #ffffff !important;
+  --background-color: #000000 !important;
+  --secondary-background-color: #080808 !important;
+  --text-color: #ffffff !important;
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-hover: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.12);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --score-green: #22c55e;
-  --score-orange: #f59e0b;
-  --score-red: #ef4444;
+  --glass-border-hover: rgba(255, 255, 255, 0.35);
+  --text-primary: #ffffff;
+  --text-secondary: #999999;
 }
 
 .stApp {
@@ -64,7 +68,7 @@ header {visibility: hidden;}
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #6366f1, #ec4899, #10b981, #6366f1);
+  background: linear-gradient(135deg, #ffffff, #888888, #ffffff, #888888);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -79,7 +83,7 @@ header {visibility: hidden;}
 .hero-subtitle {
   color: var(--text-secondary);
   margin-top: 0.75rem;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 400;
 }
 
@@ -102,8 +106,8 @@ header {visibility: hidden;}
   transition: transform 0.2s, border-color 0.2s;
 }
 .stat-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+  border-color: var(--glass-border-hover);
 }
 .stat-value {
   font-size: 1.75rem;
@@ -125,9 +129,10 @@ header {visibility: hidden;}
   gap: 0.5rem;
   flex-wrap: wrap;
   margin-top: 0.75rem;
+  margin-bottom: 1rem;
 }
 .badge {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass);
   border: 1px solid var(--glass-border);
   color: var(--text-secondary);
   padding: 0.35rem 0.75rem;
@@ -137,15 +142,117 @@ header {visibility: hidden;}
   white-space: nowrap;
 }
 .badge--earned {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: rgba(99, 102, 241, 0.5);
-  color: #a5b4fc;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #ffffff;
 }
 
 /* Topic selector wrapper */
 .topic-wrapper {
   max-width: 560px;
   margin: 0 auto 1.5rem;
+}
+
+/* ── Pure Black Selectbox (Topic Picker) ──────────────────────────────────── */
+div[data-testid="stSelectbox"] div[data-baseweb="select"] {
+  background-color: var(--surface-dark) !important;
+  border-radius: 14px !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+  background-color: var(--surface-dark) !important;
+  background-image: none !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 14px !important;
+  min-height: 3.2rem !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div > div,
+div[data-testid="stSelectbox"] div[data-baseweb="select"] div[role="button"] {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:hover {
+  background-color: var(--surface-hover) !important;
+  border-color: var(--glass-border-hover) !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus,
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div:focus-within,
+div[data-testid="stSelectbox"] div[data-baseweb="select"] > div[aria-expanded="true"] {
+  background-color: #0c0c0c !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.08) !important;
+  outline: none !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"] span {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"] svg {
+  fill: #999999 !important;
+  transition: transform 0.2s ease, fill 0.2s ease !important;
+}
+div[data-testid="stSelectbox"] div[data-baseweb="select"]:hover svg {
+  fill: #ffffff !important;
+}
+
+/* Dropdown menu list */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] > div,
+div[data-baseweb="menu"],
+ul[data-testid="stSelectboxVirtualDropdown"],
+ul[role="listbox"] {
+  background-color: #080808 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.85) !important;
+  padding: 0.35rem !important;
+}
+li[role="option"] {
+  background-color: transparent !important;
+  color: #999999 !important;
+  border-radius: 8px !important;
+  margin-bottom: 2px !important;
+  font-weight: 500 !important;
+  transition: background-color 0.15s ease, color 0.15s ease !important;
+}
+li[role="option"]:hover,
+li[role="option"][aria-selected="true"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* ── Pure Black TextArea (Answer Field) ────────────────────────────────────── */
+div[data-testid="stTextArea"] label p {
+  color: var(--text-secondary) !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+}
+div[data-testid="stTextArea"] div[data-baseweb="textarea"],
+div[data-testid="stTextArea"] div[data-baseweb="base-input"],
+div[data-testid="stTextArea"] textarea {
+  background-color: var(--surface-dark) !important;
+  color: var(--text-primary) !important;
+  caret-color: #ffffff !important;
+}
+div[data-testid="stTextArea"] div[data-baseweb="textarea"] {
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease, background-color 0.2s ease !important;
+}
+div[data-testid="stTextArea"] div[data-baseweb="textarea"]:hover {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+}
+div[data-testid="stTextArea"] div[data-baseweb="textarea"]:focus-within {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  background-color: #0c0c0c !important;
+}
+div[data-testid="stTextArea"] textarea::placeholder {
+  color: #666666 !important;
+  -webkit-text-fill-color: #666666 !important;
 }
 
 /* Question card */
@@ -161,13 +268,13 @@ header {visibility: hidden;}
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .question-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
 }
 .question-card::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; width: 5px; height: 100%;
+  top: 0; left: 0; width: 4px; height: 100%;
   background: var(--topic-color, var(--accent));
 }
 .question-num {
@@ -193,182 +300,79 @@ header {visibility: hidden;}
   line-height: 1.5;
 }
 
-/* Buttons — premium icon + text style */
-.stButton > button {
-  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-  border: 1px solid var(--glass-border);
-  color: var(--text-primary);
-  border-radius: 14px;
-  padding: 0.85rem 1rem;
-  font-weight: 700;
-  font-size: 0.9rem;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(12px);
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  position: relative;
-  overflow: hidden;
-}
-.stButton > button::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 2px;
-  background: linear-gradient(135deg, var(--accent), #4f46e5, var(--accent));
-  border-radius: 14px;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: destination-out;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.25s;
-  pointer-events: none;
-}
-.stButton > button:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.5);
-}
-.stButton > button:hover::before {
-  opacity: 1;
-}
-.stButton > button:active {
-  transform: translateY(-1px) scale(0.98);
-}
-
-/* Primary CTA button — full gradient */
-.start-btn {
-  background: linear-gradient(135deg, var(--accent), #4f46e5) !important;
-  border: none !important;
-  color: #ffffff !important;
-  font-size: 1rem !important;
-  padding: 1rem !important;
-  box-shadow: 0 10px 24px -6px rgba(99, 102, 241, 0.45);
-}
-.start-btn:hover {
-  background: linear-gradient(135deg, #4f46e5, var(--accent)) !important;
-  transform: translateY(-3px) scale(1.02) !important;
-  box-shadow: 0 16px 36px -10px rgba(99, 102, 241, 0.55) !important;
-}
-.start-btn::before {
-  display: none !important;
-}
-
-/* Evaluate button — success gradient */
-.eval-btn {
-  background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-  border: none !important;
-  color: #ffffff !important;
-  font-size: 0.95rem !important;
-  box-shadow: 0 10px 24px -6px rgba(34, 197, 94, 0.35);
-}
-.eval-btn:hover {
-  background: linear-gradient(135deg, #16a34a, #22c55e) !important;
-  transform: translateY(-3px) scale(1.02) !important;
-  box-shadow: 0 16px 36px -10px rgba(34, 197, 94, 0.45) !important;
-}
-.eval-btn::before {
-  display: none !important;
-}
-
-/* Secondary nav buttons — subtle glass */
-.nav-btn {
-  background: rgba(255,255,255,0.06) !important;
+/* ── Unified Monochrome Buttons (All identical size & dark theme) ──────────── */
+div[data-testid="stButton"] > button {
+  background-color: var(--surface-dark) !important;
+  background-image: none !important;
   border: 1px solid var(--glass-border) !important;
-  color: var(--text-secondary) !important;
-}
-.nav-btn:hover {
-  background: rgba(255,255,255,0.14) !important;
-  border-color: rgba(255,255,255,0.3) !important;
   color: var(--text-primary) !important;
-}
-.nav-btn::before {
-  opacity: 0 !important;
+  border-radius: 14px !important;
+  height: 3.2rem !important;
+  min-height: 3.2rem !important;
+  max-height: 3.2rem !important;
+  padding: 0 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.01em !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  width: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+  margin: 0 !important;
 }
 
-/* Clear button — danger tint */
-.clear-btn {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border: 1px solid rgba(239, 68, 68, 0.25) !important;
-  color: #fca5a5 !important;
-}
-.clear-btn:hover {
-  background: rgba(239, 68, 68, 0.2) !important;
-  border-color: rgba(239, 68, 68, 0.45) !important;
+div[data-testid="stButton"] > button:hover {
+  background-color: #141414 !important;
+  border-color: var(--glass-border-hover) !important;
   color: #ffffff !important;
-  box-shadow: 0 12px 28px -8px rgba(239, 68, 68, 0.3) !important;
-}
-.clear-btn::before {
-  opacity: 0 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.7), 0 0 12px rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Apply button variants by column position in the action row */
-/* Column 1: Previous question — nav-btn */
-.stHorizontalBlock > div:nth-child(1) .stButton > button {
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid var(--glass-border) !important;
-  color: var(--text-secondary) !important;
-}
-.stHorizontalBlock > div:nth-child(1) .stButton > button:hover {
-  background: rgba(255,255,255,0.14) !important;
-  border-color: rgba(255,255,255,0.3) !important;
-  color: var(--text-primary) !important;
-  box-shadow: 0 12px 28px -8px rgba(0,0,0,0.3) !important;
+div[data-testid="stButton"] > button:active {
+  transform: translateY(0px) scale(0.99) !important;
+  background-color: #1c1c1c !important;
 }
 
-/* Column 2: Evaluate answer — eval-btn (primary) */
-.stHorizontalBlock > div:nth-child(2) .stButton > button {
-  background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-  border: none !important;
+div[data-testid="stButton"] > button:focus:not(:active) {
+  border-color: var(--glass-border-hover) !important;
   color: #ffffff !important;
-  box-shadow: 0 10px 24px -6px rgba(34, 197, 94, 0.35);
-}
-.stHorizontalBlock > div:nth-child(2) .stButton > button:hover {
-  background: linear-gradient(135deg, #16a34a, #22c55e) !important;
-  box-shadow: 0 16px 36px -10px rgba(34, 197, 94, 0.45) !important;
+  box-shadow: none !important;
 }
 
-/* Column 3: Clear answer — clear-btn (danger) */
-.stHorizontalBlock > div:nth-child(3) .stButton > button {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border: 1px solid rgba(239, 68, 68, 0.25) !important;
-  color: #fca5a5 !important;
+div[data-testid="stButton"] > button span[data-testid="stIconMaterial"] {
+  font-size: 1.15rem !important;
+  color: inherit !important;
+  opacity: 0.9;
 }
-.stHorizontalBlock > div:nth-child(3) .stButton > button:hover {
-  background: rgba(239, 68, 68, 0.2) !important;
-  border-color: rgba(239, 68, 68, 0.45) !important;
+
+/* ── Distinct Monochrome Style for "Очистити" (3rd column) ────────────────── */
+div[data-testid="stHorizontalBlock"] > div:nth-child(3) div[data-testid="stButton"] > button {
+  background-color: #030303 !important;
+  border: 1px dashed rgba(255, 255, 255, 0.25) !important;
+  color: #999999 !important;
+}
+
+div[data-testid="stHorizontalBlock"] > div:nth-child(3) div[data-testid="stButton"] > button:hover {
+  background-color: #121212 !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
   color: #ffffff !important;
-  box-shadow: 0 12px 28px -8px rgba(239, 68, 68, 0.3) !important;
+  box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.8), 0 0 14px rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Column 4: Next question — nav-btn */
-.stHorizontalBlock > div:nth-child(4) .stButton > button {
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid var(--glass-border) !important;
-  color: var(--text-secondary) !important;
-}
-.stHorizontalBlock > div:nth-child(4) .stButton > button:hover {
-  background: rgba(255,255,255,0.14) !important;
-  border-color: rgba(255,255,255,0.3) !important;
-  color: var(--text-primary) !important;
-  box-shadow: 0 12px 28px -8px rgba(0,0,0,0.3) !important;
-}
-
-/* Start/Continue standalone button — full gradient */
-.stButton > button:has-text("▶️ Розпочати / Продовжити") {
-  background: linear-gradient(135deg, var(--accent), #4f46e5) !important;
-  border: none !important;
+/* Highlight "Оцінити відповідь" (2nd column) with a brighter monochrome border */
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stButton"] > button {
+  background-color: #111111 !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
   color: #ffffff !important;
-  font-size: 1rem !important;
-  padding: 1rem !important;
-  box-shadow: 0 10px 24px -6px rgba(99, 102, 241, 0.45);
 }
-.stButton > button:has-text("▶️ Розпочати / Продовжити"):hover {
-  background: linear-gradient(135deg, #4f46e5, var(--accent)) !important;
-  transform: translateY(-3px) scale(1.02) !important;
-  box-shadow: 0 16px 36px -10px rgba(99, 102, 241, 0.55) !important;
+
+div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stButton"] > button:hover {
+  background-color: #1c1c1c !important;
+  border-color: #ffffff !important;
 }
 
 /* Score circle */
@@ -456,14 +460,14 @@ header {visibility: hidden;}
 }
 .progress-bar-wrap {
   height: 10px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--topic-color), #818cf8);
+  background: linear-gradient(90deg, var(--topic-color), #666666);
   border-radius: 6px;
   transition: width 0.6s ease;
 }
@@ -558,19 +562,19 @@ def _award_xp(points: int, score: int | None = None):
     st.session_state.xp += points
     st.session_state.level = st.session_state.xp // 100 + 1
     if score is not None and score >= 10:
-        _add_badge("💎 Ідеальний рахунок 10/10")
+        _add_badge("✦ Ідеальний рахунок 10/10")
     elif score is not None and score >= 9:
-        _add_badge("⭐ Відмінний рахунок 9+")
-    if st.session_state.streak >= 5 and "🔥 Серія 5" not in st.session_state.badges:
-        _add_badge("🔥 Серія 5")
-    if st.session_state.streak >= 10 and "⚡ Серія 10" not in st.session_state.badges:
-        _add_badge("⚡ Серія 10")
-    if len(st.session_state.history) >= 1 and "👣 Перші кроки" not in st.session_state.badges:
-        _add_badge("👣 Перші кроки")
+        _add_badge("★ Відмінний рахунок 9+")
+    if st.session_state.streak >= 5 and "⚡ Серія 5" not in st.session_state.badges:
+        _add_badge("⚡ Серія 5")
+    if st.session_state.streak >= 10 and "⟡ Серія 10" not in st.session_state.badges:
+        _add_badge("⟡ Серія 10")
+    if len(st.session_state.history) >= 1 and "◈ Перші кроки" not in st.session_state.badges:
+        _add_badge("◈ Перші кроки")
 
 
 def _topic_color(topic: str) -> str:
-    return TOPIC_COLORS.get(topic, "#6366f1")
+    return TOPIC_COLORS.get(topic, "#ffffff")
 
 
 def _load_progress_from_disk() -> dict:
@@ -583,7 +587,7 @@ def _load_progress_from_disk() -> dict:
 # ── Hero header ───────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
-  <h1 class="hero-title">🎯 AI Interview Simulator</h1>
+  <h1 class="hero-title">◈ AI Interview Simulator</h1>
   <p class="hero-subtitle">Практикуйте технічні співбесіди з AI-оцінюванням · питання українською та англійською</p>
 </div>
 """, unsafe_allow_html=True)
@@ -623,11 +627,9 @@ st.markdown(f"""
 col_topic, col_progress = st.columns([3, 1])
 
 with col_topic:
-    st.markdown("<div class='topic-wrapper'>", unsafe_allow_html=True)
     topic_label = st.selectbox("Тема", TOPIC_LABELS, label_visibility="collapsed")
     topic = TOPIC_BY_LABEL[topic_label]
     color = _topic_color(topic)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with col_progress:
     progress = _load_progress_from_disk()
@@ -647,7 +649,7 @@ with col_progress:
     """, unsafe_allow_html=True)
 
 # ── Start / Continue ──────────────────────────────────────────────────────────
-if st.button("▶️ Розпочати / Продовжити", use_container_width=True):
+if st.button("Розпочати / Продовжити", icon=":material/play_arrow:", use_container_width=True):
     try:
         q, idx, total = get_current_question(topic)
         st.session_state.question = q
@@ -683,7 +685,7 @@ if st.session_state.question:
 
     col_prev, col_eval, col_refresh, col_next = st.columns(4)
 
-    if col_prev.button("⬅️ Попереднє питання", use_container_width=True):
+    if col_prev.button("Попереднє", icon=":material/arrow_back:", use_container_width=True):
         try:
             _save_answer_to_cache(topic, idx)
             q, new_idx, total = previous_question(topic)
@@ -695,7 +697,7 @@ if st.session_state.question:
         except Exception as e:
             st.error(f"Помилка: {e}")
 
-    if col_eval.button("✅ Оцінити відповідь", use_container_width=True):
+    if col_eval.button("Оцінити відповідь", icon=":material/task_alt:", use_container_width=True):
         if not st.session_state[answer_widget_key].strip():
             st.warning("Будь ласка, введіть відповідь перед оцінкою.")
         else:
@@ -730,8 +732,7 @@ if st.session_state.question:
                 except Exception as e:
                     st.error(f"Помилка оцінки: {e}")
 
-    if col_refresh.button("🔄 Очистити", use_container_width=True,
-                          help="Очистити відповідь та оцінку для цього питання"):
+    if col_refresh.button("Очистити", icon=":material/delete_sweep:", use_container_width=True):
         st.session_state.cache.pop(_cache_key(topic, idx), None)
         st.session_state.evaluation = None
         st.session_state.streak = 0
@@ -739,7 +740,7 @@ if st.session_state.question:
         st.session_state[f"answer_{st.session_state.answer_key}"] = ""
         st.rerun()
 
-    if col_next.button("➡️ Наступне питання", use_container_width=True):
+    if col_next.button("Наступне", icon=":material/arrow_forward:", use_container_width=True):
         try:
             _save_answer_to_cache(topic, idx)
             q, new_idx, total = advance_question(topic)
@@ -756,7 +757,7 @@ if st.session_state.evaluation:
     ev = st.session_state.evaluation
     score = ev.get("score", "—")
     verdict = ev.get("verdict", "")
-    score_color = "#22c55e" if score >= 7 else "#f59e0b" if score >= 4 else "#ef4444"
+    score_color = "#ffffff" if score >= 7 else "#cccccc" if score >= 4 else "#888888"
 
     # Animated score circle
     stroke_dasharray = 314  # 2 * PI * 50
@@ -786,7 +787,7 @@ if st.session_state.evaluation:
           particleCount: 160,
           spread: 80,
           origin: { y: 0.45 },
-          colors: ['#6366f1', '#ec4899', '#10b981', '#f59e0b']
+          colors: ['#ffffff', '#cccccc', '#aaaaaa', '#888888']
         });
         </script>
         """, height=0)
@@ -795,7 +796,7 @@ if st.session_state.evaluation:
     with col_s:
         st.markdown("""
         <div class="eval-section">
-          <div class="eval-section-title">✅ Сильні сторони</div>
+          <div class="eval-section-title">✦ Сильні сторони</div>
         """, unsafe_allow_html=True)
         for item in ev.get("strengths", []):
             st.markdown(f"- {item}")
@@ -803,7 +804,7 @@ if st.session_state.evaluation:
     with col_w:
         st.markdown("""
         <div class="eval-section">
-          <div class="eval-section-title">⚠️ Слабкі сторони</div>
+          <div class="eval-section-title">△ Слабкі сторони</div>
         """, unsafe_allow_html=True)
         for item in ev.get("weaknesses", []):
             st.markdown(f"- {item}")
@@ -812,28 +813,28 @@ if st.session_state.evaluation:
     if ev.get("missing_points"):
         st.markdown("""
         <div class="eval-section">
-          <div class="eval-section-title">❌ Пропущені пункти</div>
+          <div class="eval-section-title">✕ Пропущені пункти</div>
         """, unsafe_allow_html=True)
         for item in ev["missing_points"]:
             st.markdown(f"- {item}")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    with st.expander("💡 Ідеальна відповідь"):
+    with st.expander("Ідеальна відповідь", icon=":material/lightbulb:"):
         st.markdown(ev.get("ideal_answer", ""))
 
     if ev.get("follow_up_questions"):
-        with st.expander("🔁 Питання для уточнення"):
+        with st.expander("Питання для уточнення", icon=":material/forum:"):
             for fq in ev["follow_up_questions"]:
                 st.markdown(f"- {fq}")
 
 # ── Session history ───────────────────────────────────────────────────────────
 if len(st.session_state.history) > 1:
     st.markdown("---")
-    with st.expander(f"📜 Сесійна історія ({len(st.session_state.history)} записів)"):
+    with st.expander(f"Сесійна історія ({len(st.session_state.history)} записів)", icon=":material/history:"):
         for i, entry in enumerate(reversed(st.session_state.history[:-1]), 1):
             ev = entry["evaluation"]
             score = ev.get("score", "—")
-            color = "#22c55e" if score >= 7 else "#f59e0b" if score >= 4 else "#ef4444"
+            color = "#ffffff" if score >= 7 else "#cccccc" if score >= 4 else "#888888"
             topic_color = _topic_color(entry["topic"])
             st.markdown(f"""
             <div class="history-entry" style="border-left: 4px solid {topic_color};">
