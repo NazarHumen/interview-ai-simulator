@@ -19,6 +19,25 @@ TOPIC_COLORS = {
     "Computer Science": "#888888",
 }
 
+# ── Persistent answer cache (survives server restart) ─────────────────────────
+_CACHE_FILE = Path(__file__).parent / "data" / "answers_cache.json"
+
+
+def _load_cache_from_disk() -> dict:
+    """Load persisted answer cache from disk."""
+    if _CACHE_FILE.exists():
+        try:
+            return json.loads(_CACHE_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return {}
+    return {}
+
+
+def _save_cache_to_disk(cache: dict) -> None:
+    """Persist answer cache to disk."""
+    _CACHE_FILE.write_text(
+        json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
+
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(page_title="AI Interview Simulator", page_icon=":material/terminal:", layout="wide")
 
@@ -523,10 +542,15 @@ for key, default in [
     ("question", None), ("q_index", 0), ("q_total", 0),
     ("evaluation", None), ("history", []), ("answer_key", 0),
     ("cache", {}), ("xp", 0), ("level", 1), ("streak", 0),
-    ("badges", []),
+    ("badges", []), ("_cache_loaded", False),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
+
+# Restore persisted answers once per server session (survives restart)
+if not st.session_state._cache_loaded:
+    st.session_state.cache = _load_cache_from_disk()
+    st.session_state._cache_loaded = True
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _cache_key(topic_key, idx):
@@ -551,6 +575,7 @@ def _save_answer_to_cache(topic_key, idx):
         "answer": current,
         "evaluation": entry.get("evaluation"),
     }
+    _save_cache_to_disk(st.session_state.cache)
 
 
 def _add_badge(badge: str):
@@ -711,6 +736,7 @@ if st.session_state.question:
                         "answer": answer_text,
                         "evaluation": result,
                     }
+                    _save_cache_to_disk(st.session_state.cache)
                     st.session_state.history.append({
                         "topic": topic,
                         "question": q,
@@ -734,6 +760,7 @@ if st.session_state.question:
 
     if col_refresh.button("Очистити", icon=":material/delete_sweep:", use_container_width=True):
         st.session_state.cache.pop(_cache_key(topic, idx), None)
+        _save_cache_to_disk(st.session_state.cache)
         st.session_state.evaluation = None
         st.session_state.streak = 0
         st.session_state.answer_key += 1
