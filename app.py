@@ -4,11 +4,13 @@ from pathlib import Path
 import streamlit as st
 
 from services.gemini_client import evaluate_answer
-from services.question_bank import advance_question, get_current_question, previous_question
+from services.question_bank import advance_question, get_current_question, \
+    previous_question
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 _data = json.loads(
-    (Path(__file__).parent / "data" / "topics.json").read_text(encoding="utf-8"))
+    (Path(__file__).parent / "data" / "topics.json").read_text(
+        encoding="utf-8"))
 TOPICS = _data["topics"]
 TOPIC_LABELS = [t["label"] for t in TOPICS]
 TOPIC_BY_LABEL = {t["label"]: t["key"] for t in TOPICS}
@@ -38,8 +40,10 @@ def _save_cache_to_disk(cache: dict) -> None:
     _CACHE_FILE.write_text(
         json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
 
+
 # ── Page config ───────────────────────────────────────────────────────────────
-st.set_page_config(page_title="AI Interview Simulator", page_icon=":material/terminal:", layout="wide")
+st.set_page_config(page_title="AI Interview Simulator",
+                   page_icon=":material/terminal:", layout="wide")
 
 # ── Custom CSS theme ──────────────────────────────────────────────────────────
 _CSS = """
@@ -552,6 +556,7 @@ if not st.session_state._cache_loaded:
     st.session_state.cache = _load_cache_from_disk()
     st.session_state._cache_loaded = True
 
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def _cache_key(topic_key, idx):
     return f"{topic_key}::{idx}"
@@ -621,7 +626,8 @@ st.markdown("""
 badges_html = ""
 if st.session_state.badges:
     badges_html = "".join(
-        f"<span class='badge badge--earned'>{b}</span>" for b in st.session_state.badges
+        f"<span class='badge badge--earned'>{b}</span>" for b in
+        st.session_state.badges
     )
 else:
     badges_html = "<span class='badge' style='opacity:0.4;'>—</span>"
@@ -652,7 +658,8 @@ st.markdown(f"""
 col_topic, col_progress = st.columns([3, 1])
 
 with col_topic:
-    topic_label = st.selectbox("Тема", TOPIC_LABELS, label_visibility="collapsed")
+    topic_label = st.selectbox("Тема", TOPIC_LABELS,
+                               label_visibility="collapsed")
     topic = TOPIC_BY_LABEL[topic_label]
     color = _topic_color(topic)
 
@@ -660,7 +667,8 @@ with col_progress:
     progress = _load_progress_from_disk()
     topic_progress = progress.get(topic, 0)
     questions_bank = json.loads(
-        (Path(__file__).parent / "data" / "questions_bank.json").read_text(encoding="utf-8"))
+        (Path(__file__).parent / "data" / "questions_bank.json").read_text(
+            encoding="utf-8"))
     total = len(questions_bank.get(topic, []))
     pct = int((topic_progress / total) * 100) if total else 0
     st.markdown(f"""
@@ -674,7 +682,8 @@ with col_progress:
     """, unsafe_allow_html=True)
 
 # ── Start / Continue ──────────────────────────────────────────────────────────
-if st.button("Розпочати / Продовжити", icon=":material/play_arrow:", use_container_width=True):
+if st.button("Розпочати / Продовжити", icon=":material/play_arrow:",
+             use_container_width=True):
     try:
         q, idx, total = get_current_question(topic)
         st.session_state.question = q
@@ -710,7 +719,8 @@ if st.session_state.question:
 
     col_prev, col_eval, col_refresh, col_next = st.columns(4)
 
-    if col_prev.button("Попереднє", icon=":material/arrow_back:", use_container_width=True):
+    if col_prev.button("Попереднє", icon=":material/arrow_back:",
+                       use_container_width=True):
         try:
             _save_answer_to_cache(topic, idx)
             q, new_idx, total = previous_question(topic)
@@ -722,7 +732,8 @@ if st.session_state.question:
         except Exception as e:
             st.error(f"Помилка: {e}")
 
-    if col_eval.button("Оцінити відповідь", icon=":material/task_alt:", use_container_width=True):
+    if col_eval.button("Оцінити відповідь", icon=":material/task_alt:",
+                       use_container_width=True):
         if not st.session_state[answer_widget_key].strip():
             st.warning("Будь ласка, введіть відповідь перед оцінкою.")
         else:
@@ -758,7 +769,8 @@ if st.session_state.question:
                 except Exception as e:
                     st.error(f"Помилка оцінки: {e}")
 
-    if col_refresh.button("Очистити", icon=":material/delete_sweep:", use_container_width=True):
+    if col_refresh.button("Очистити", icon=":material/delete_sweep:",
+                          use_container_width=True):
         st.session_state.cache.pop(_cache_key(topic, idx), None)
         _save_cache_to_disk(st.session_state.cache)
         st.session_state.evaluation = None
@@ -767,7 +779,8 @@ if st.session_state.question:
         st.session_state[f"answer_{st.session_state.answer_key}"] = ""
         st.rerun()
 
-    if col_next.button("Наступне", icon=":material/arrow_forward:", use_container_width=True):
+    if col_next.button("Наступне", icon=":material/arrow_forward:",
+                       use_container_width=True):
         try:
             _save_answer_to_cache(topic, idx)
             q, new_idx, total = advance_question(topic)
@@ -857,7 +870,9 @@ if st.session_state.evaluation:
 # ── Session history ───────────────────────────────────────────────────────────
 if len(st.session_state.history) > 1:
     st.markdown("---")
-    with st.expander(f"Сесійна історія ({len(st.session_state.history)} записів)", icon=":material/history:"):
+    with st.expander(
+            f"Сесійна історія ({len(st.session_state.history)} записів)",
+            icon=":material/history:"):
         for i, entry in enumerate(reversed(st.session_state.history[:-1]), 1):
             ev = entry["evaluation"]
             score = ev.get("score", "—")
