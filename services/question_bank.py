@@ -17,7 +17,8 @@ def _load_progress() -> dict:
 
 
 def _save_progress(progress: dict) -> None:
-    _PROGRESS_FILE.write_text(json.dumps(progress, ensure_ascii=False, indent=2), encoding="utf-8")
+    _PROGRESS_FILE.write_text(
+        json.dumps(progress, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def get_current_question(topic: str) -> tuple[dict, int, int]:
