@@ -681,6 +681,17 @@ with col_progress:
     </div>
     """, unsafe_allow_html=True)
 
+# ── Auto-restore current question & evaluation after server restart ───────────
+if st.session_state.question is None:
+    try:
+        _q, _idx, _total = get_current_question(topic)
+        st.session_state.question = _q
+        st.session_state.q_index = _idx
+        st.session_state.q_total = _total
+        _load_from_cache(topic, _idx)
+    except Exception:
+        pass
+
 # ── Start / Continue ──────────────────────────────────────────────────────────
 if st.button("Розпочати / Продовжити", icon=":material/play_arrow:",
              use_container_width=True):
