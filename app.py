@@ -6,6 +6,10 @@ import streamlit as st
 from services.gemini_client import evaluate_answer
 from services.question_bank import advance_question, get_current_question, \
     previous_question
+from services.supabase_client import AuthError, is_available as supabase_available, \
+    last_error as supabase_error, sign_in, sign_up
+from services.user_store import delete_answer, load_answers, load_progress, \
+    save_answer
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 _data = json.loads(
@@ -20,26 +24,6 @@ TOPIC_COLORS = {
     "OOP": "#aaaaaa",
     "Computer Science": "#888888",
 }
-
-# ── Persistent answer cache (survives server restart) ─────────────────────────
-_CACHE_FILE = Path(__file__).parent / "data" / "answers_cache.json"
-
-
-def _load_cache_from_disk() -> dict:
-    """Load persisted answer cache from disk."""
-    if _CACHE_FILE.exists():
-        try:
-            return json.loads(_CACHE_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            return {}
-    return {}
-
-
-def _save_cache_to_disk(cache: dict) -> None:
-    """Persist answer cache to disk."""
-    _CACHE_FILE.write_text(
-        json.dumps(cache, ensure_ascii=False, indent=2), encoding="utf-8")
-
 
 # ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(page_title="AI Interview Simulator",
@@ -499,6 +483,80 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stButto
   color: var(--text-secondary);
 }
 
+/* ── Auth card ─────────────────────────────────────────────────────────────── */
+.auth-wrapper {
+  max-width: 420px;
+  margin: 1rem auto 2rem;
+}
+.auth-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.75rem 1.75rem 1.25rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+}
+.auth-hero {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.auth-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, #888888, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 0.35rem 0;
+  letter-spacing: -0.02em;
+}
+.auth-sub {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+}
+/* Tabs inside auth card: compact and centered */
+.auth-wrapper div[data-baseweb="tab-list"] {
+  background: transparent !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  gap: 0 !important;
+  margin-bottom: 1rem !important;
+}
+.auth-wrapper button[data-baseweb="tab"] {
+  flex: 1 !important;
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 0.9rem !important;
+  padding: 0.6rem 0 !important;
+}
+.auth-wrapper button[data-baseweb="tab"][aria-selected="true"] {
+  color: #ffffff !important;
+}
+.auth-wrapper div[data-baseweb="tab-highlight"] {
+  background: #ffffff !important;
+  height: 2px !important;
+}
+/* Tighten inputs inside auth card */
+.auth-wrapper div[data-testid="stTextInput"] input {
+  background-color: var(--surface-dark) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 12px !important;
+  height: 2.8rem !important;
+  padding: 0 0.9rem !important;
+}
+.auth-wrapper div[data-testid="stTextInput"] input:focus {
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.auth-wrapper div[data-testid="stTextInput"] label p {
+  color: var(--text-secondary) !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+}
+
 /* History */
 .history-entry {
   background: var(--glass);
@@ -547,13 +605,104 @@ for key, default in [
     ("evaluation", None), ("history", []), ("answer_key", 0),
     ("cache", {}), ("xp", 0), ("level", 1), ("streak", 0),
     ("badges", []), ("_cache_loaded", False),
+    ("user", None), ("auth_mode", "login"),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
 
-# Restore persisted answers once per server session (survives restart)
+
+# ── Auth screen ───────────────────────────────────────────────────────────────
+def _render_auth_screen():
+    # Центрована компактна картка: ліва/права колонки — порожні «поля»
+    _l, _c, _r = st.columns([1, 1.2, 1])
+    with _c:
+        st.markdown(
+            """
+            <div class="auth-wrapper">
+              <div class="auth-card">
+                <div class="auth-hero">
+                  <h1 class="auth-logo">◈ Interview AI</h1>
+                  <p class="auth-sub">Увійдіть, щоб зберігати прогрес між пристроями</p>
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        if not supabase_available():
+            st.error(
+                "Supabase не налаштовано. Додайте SUPABASE_URL та SUPABASE_KEY "
+                "у `.env` або Streamlit Secrets. Деталі: "
+                f"{supabase_error() or '—'}"
+            )
+            st.markdown("</div></div>", unsafe_allow_html=True)
+            return
+
+        st.markdown('<div class="auth-wrapper">', unsafe_allow_html=True)
+        tab_login, tab_signup = st.tabs(["Вхід", "Реєстрація"])
+
+        with tab_login:
+            with st.form("login_form", clear_on_submit=False):
+                username = st.text_input("Username", key="login_username",
+                                         placeholder="your_username")
+                password = st.text_input("Пароль", type="password",
+                                         key="login_password",
+                                         placeholder="••••••••")
+                submitted = st.form_submit_button(
+                    "Увійти", use_container_width=True,
+                    icon=":material/login:",
+                )
+                if submitted:
+                    try:
+                        user = sign_in(username, password)
+                        st.session_state.user = user
+                        st.session_state._cache_loaded = False
+                        st.session_state.question = None
+                        st.rerun()
+                    except AuthError as e:
+                        st.error(str(e))
+                    except Exception as e:
+                        st.error(f"Помилка: {e}")
+
+        with tab_signup:
+            with st.form("signup_form", clear_on_submit=False):
+                username = st.text_input("Username (мін. 3 символи)",
+                                         key="signup_username",
+                                         placeholder="your_username")
+                password = st.text_input("Пароль (мін. 6 символів)",
+                                         type="password",
+                                         key="signup_password",
+                                         placeholder="••••••••")
+                submitted = st.form_submit_button(
+                    "Створити акаунт", use_container_width=True,
+                    icon=":material/person_add:",
+                )
+                if submitted:
+                    try:
+                        user = sign_up(username, password)
+                        st.session_state.user = user
+                        st.session_state._cache_loaded = False
+                        st.session_state.question = None
+                        st.success("Акаунт створено! Ви увійшли в систему.")
+                        st.rerun()
+                    except AuthError as e:
+                        st.error(str(e))
+                    except Exception as e:
+                        st.error(f"Помилка: {e}")
+
+        # Закриваємо .auth-wrapper (внутрішній) + .auth-card + .auth-wrapper (зовнішній)
+        st.markdown("</div></div></div>", unsafe_allow_html=True)
+
+
+if st.session_state.user is None:
+    _render_auth_screen()
+    st.stop()
+
+_USER_ID = st.session_state.user["id"]
+_USERNAME = st.session_state.user["username"]
+
+# Restore persisted answers for this user once per server session
 if not st.session_state._cache_loaded:
-    st.session_state.cache = _load_cache_from_disk()
+    st.session_state.cache = load_answers(_USER_ID)
     st.session_state._cache_loaded = True
 
 
@@ -576,11 +725,12 @@ def _save_answer_to_cache(topic_key, idx):
     """Persist the currently typed answer (keeping any existing evaluation)."""
     current = st.session_state.get(f"answer_{st.session_state.answer_key}", "")
     entry = st.session_state.cache.get(_cache_key(topic_key, idx)) or {}
+    evaluation = entry.get("evaluation")
     st.session_state.cache[_cache_key(topic_key, idx)] = {
         "answer": current,
-        "evaluation": entry.get("evaluation"),
+        "evaluation": evaluation,
     }
-    _save_cache_to_disk(st.session_state.cache)
+    save_answer(_USER_ID, topic_key, idx, current, evaluation)
 
 
 def _add_badge(badge: str):
@@ -608,19 +758,25 @@ def _topic_color(topic: str) -> str:
 
 
 def _load_progress_from_disk() -> dict:
-    _progress_file = Path(__file__).parent / "data" / "progress.json"
-    if _progress_file.exists():
-        return json.loads(_progress_file.read_text(encoding="utf-8"))
-    return {}
+    return load_progress(_USER_ID)
 
 
 # ── Hero header ───────────────────────────────────────────────────────────────
-st.markdown("""
+st.markdown(f"""
 <div class="hero">
   <h1 class="hero-title">◈ AI Interview Simulator</h1>
   <p class="hero-subtitle">Практикуйте технічні співбесіди з AI-оцінюванням · питання українською та англійською</p>
+  <p class="hero-subtitle" style="font-size:0.9rem;margin-top:0.25rem;">Вітаємо, <b>{_USERNAME}</b></p>
 </div>
 """, unsafe_allow_html=True)
+
+_col_logout_l, _col_logout_r = st.columns([5, 1])
+with _col_logout_r:
+    if st.button("Вийти", icon=":material/logout:", use_container_width=True):
+        for _k in ["user", "_cache_loaded", "cache", "question",
+                   "evaluation", "history", "q_index", "q_total"]:
+            st.session_state.pop(_k, None)
+        st.rerun()
 
 # ── Stats bar ─────────────────────────────────────────────────────────────────
 badges_html = ""
@@ -684,7 +840,7 @@ with col_progress:
 # ── Auto-restore current question & evaluation after server restart ───────────
 if st.session_state.question is None:
     try:
-        _q, _idx, _total = get_current_question(topic)
+        _q, _idx, _total = get_current_question(topic, _USER_ID)
         st.session_state.question = _q
         st.session_state.q_index = _idx
         st.session_state.q_total = _total
@@ -696,7 +852,7 @@ if st.session_state.question is None:
 if st.button("Розпочати / Продовжити", icon=":material/play_arrow:",
              use_container_width=True):
     try:
-        q, idx, total = get_current_question(topic)
+        q, idx, total = get_current_question(topic, _USER_ID)
         st.session_state.question = q
         st.session_state.q_index = idx
         st.session_state.q_total = total
@@ -734,7 +890,7 @@ if st.session_state.question:
                        use_container_width=True):
         try:
             _save_answer_to_cache(topic, idx)
-            q, new_idx, total = previous_question(topic)
+            q, new_idx, total = previous_question(topic, _USER_ID)
             st.session_state.question = q
             st.session_state.q_index = new_idx
             st.session_state.q_total = total
@@ -758,7 +914,7 @@ if st.session_state.question:
                         "answer": answer_text,
                         "evaluation": result,
                     }
-                    _save_cache_to_disk(st.session_state.cache)
+                    save_answer(_USER_ID, topic, idx, answer_text, result)
                     st.session_state.history.append({
                         "topic": topic,
                         "question": q,
@@ -783,7 +939,7 @@ if st.session_state.question:
     if col_refresh.button("Очистити", icon=":material/delete_sweep:",
                           use_container_width=True):
         st.session_state.cache.pop(_cache_key(topic, idx), None)
-        _save_cache_to_disk(st.session_state.cache)
+        delete_answer(_USER_ID, topic, idx)
         st.session_state.evaluation = None
         st.session_state.streak = 0
         st.session_state.answer_key += 1
@@ -794,7 +950,7 @@ if st.session_state.question:
                        use_container_width=True):
         try:
             _save_answer_to_cache(topic, idx)
-            q, new_idx, total = advance_question(topic)
+            q, new_idx, total = advance_question(topic, _USER_ID)
             st.session_state.question = q
             st.session_state.q_index = new_idx
             st.session_state.q_total = total
