@@ -31,4 +31,10 @@ Thumbs.db
 # Progress (optional: remove this line if you want to track progress in git)
 data/progress.json
 
+# Per-user local fallback storage
+data/users/
+
+# Streamlit secrets (contain Supabase keys)
+.streamlit/secrets.toml
+
 .junie/
