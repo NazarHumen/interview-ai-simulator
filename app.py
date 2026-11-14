@@ -1,4 +1,5 @@
 import json
+from datetime import date, timedelta
 from pathlib import Path
 
 import streamlit as st
@@ -6,11 +7,13 @@ import streamlit as st
 from services.gemini_client import evaluate_answer
 from services.question_bank import advance_question, get_current_question, \
     previous_question
+from services.streak import evaluate_daily_streak_status, record_question_completion
 from services.supabase_client import AuthError, \
+    is_admin_user, \
     is_available as supabase_available, \
     last_error as supabase_error, sign_in, sign_up
 from services.user_store import delete_answer, load_answers, load_progress, \
-    save_answer
+    load_user_stats, save_answer, save_user_stats
 
 # ── Data ──────────────────────────────────────────────────────────────────────
 _data = json.loads(
@@ -153,6 +156,49 @@ header {visibility: hidden;}
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.28);
   color: #ffffff;
+}
+
+/* Streak recovery alert */
+.streak-recovery-alert {
+  background: rgba(255, 82, 82, 0.08);
+  border: 1px solid rgba(255, 82, 82, 0.35);
+  border-radius: 14px;
+  padding: 0.85rem 1.15rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.streak-recovery-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.streak-recovery-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.streak-recovery-title {
+  color: #ff6b6b;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+.streak-recovery-desc {
+  color: #d0d0d0;
+  font-size: 0.85rem;
+}
+.streak-progress-pill {
+  background: rgba(255, 82, 82, 0.18);
+  border: 1px solid rgba(255, 82, 82, 0.4);
+  color: #ff8585;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 /* Topic selector wrapper */
@@ -607,6 +653,12 @@ for key, default in [
     ("cache", {}), ("xp", 0), ("level", 1), ("streak", 0),
     ("badges", []), ("_cache_loaded", False),
     ("user", None), ("auth_mode", "login"),
+    ("last_activity_date", None),
+    ("frozen_streak", 0),
+    ("recovery_progress", 0),
+    ("show_streak_dialog", False),
+    ("show_restored_dialog", False),
+    ("_stats_loaded", False),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
@@ -700,11 +752,130 @@ if st.session_state.user is None:
 
 _USER_ID = st.session_state.user["id"]
 _USERNAME = st.session_state.user["username"]
+_IS_ADMIN = is_admin_user(st.session_state.user)
 
 # Restore persisted answers for this user once per server session
 if not st.session_state._cache_loaded:
     st.session_state.cache = load_answers(_USER_ID)
     st.session_state._cache_loaded = True
+
+
+def _persist_user_stats():
+    save_user_stats(_USER_ID, {
+        "streak": st.session_state.streak,
+        "last_activity_date": st.session_state.last_activity_date,
+        "frozen_streak": st.session_state.frozen_streak,
+        "recovery_progress": st.session_state.recovery_progress,
+        "xp": st.session_state.xp,
+        "level": st.session_state.level,
+        "badges": st.session_state.badges,
+    })
+
+
+# Restore persisted user stats & check daily streak
+if not st.session_state._stats_loaded:
+    user_stats = load_user_stats(_USER_ID)
+    user_stats, burned = evaluate_daily_streak_status(user_stats)
+    save_user_stats(_USER_ID, user_stats)
+
+    st.session_state.xp = user_stats.get("xp", 0)
+    st.session_state.level = user_stats.get("level", 1)
+    st.session_state.streak = user_stats.get("streak", 0)
+    st.session_state.last_activity_date = user_stats.get("last_activity_date")
+    st.session_state.frozen_streak = user_stats.get("frozen_streak", 0)
+    st.session_state.recovery_progress = user_stats.get("recovery_progress", 0)
+    st.session_state.badges = user_stats.get("badges", [])
+    st.session_state._stats_loaded = True
+
+    if burned and st.session_state.frozen_streak > 0:
+        st.session_state.show_streak_dialog = True
+else:
+    # Check if day elapsed during active session
+    curr_stats = {
+        "streak": st.session_state.streak,
+        "last_activity_date": st.session_state.last_activity_date,
+        "frozen_streak": st.session_state.frozen_streak,
+        "recovery_progress": st.session_state.recovery_progress,
+    }
+    updated_stats, burned = evaluate_daily_streak_status(curr_stats)
+    if burned and updated_stats["frozen_streak"] != st.session_state.frozen_streak:
+        st.session_state.streak = updated_stats["streak"]
+        st.session_state.frozen_streak = updated_stats["frozen_streak"]
+        st.session_state.recovery_progress = updated_stats["recovery_progress"]
+        _persist_user_stats()
+        st.session_state.show_streak_dialog = True
+
+
+# ── Dialogs ───────────────────────────────────────────────────────────────────
+def _on_streak_dialog_dismiss():
+    st.session_state.show_streak_dialog = False
+
+
+@st.dialog("🔥 Ваша серія згоріла!", width="small", on_dismiss=_on_streak_dialog_dismiss)
+def _show_streak_burned_dialog(frozen_streak: int, progress: int = 0):
+    st.markdown(
+        f"""
+        <div style="text-align: center; padding: 0.25rem 0 0.5rem;">
+          <div style="font-size: 3.2rem; line-height: 1; margin-bottom: 0.75rem;">🔥</div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem; color: #ff5252;">
+            Ваша щоденна серія згоріла!
+          </h2>
+          <p style="font-size: 0.95rem; color: #d0d0d0; line-height: 1.5; margin-bottom: 1.25rem;">
+            Ви пропустили дні практики, і ваша серія зупинилася на <b>{frozen_streak} дн.</b>
+          </p>
+          <div style="background: rgba(255, 82, 82, 0.1); border: 1px solid rgba(255, 82, 82, 0.35); border-radius: 12px; padding: 1.1rem; margin-bottom: 1.25rem; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+              <span style="font-weight: 700; color: #ffffff; font-size: 0.95rem;">
+                ⚡ Пройдіть 2 питання, щоб відновити серію!
+              </span>
+              <span style="color: #ff8585; font-weight: 800; font-size: 0.95rem;">
+                {progress} / 2
+              </span>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.1); border-radius: 6px; height: 9px; width: 100%; overflow: hidden;">
+              <div style="background: linear-gradient(90deg, #ff5252, #ff7b7b); height: 100%; width: {min(progress * 50, 100)}%; transition: width 0.3s ease;"></div>
+            </div>
+            <div style="margin-top: 0.6rem; font-size: 0.8rem; color: #aaaaaa; line-height: 1.4;">
+              Дайте відповіді та оцініть 2 запитання, щоб повернути серію на якій ви зупинилися.
+            </div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Зрозуміло, пройти 2 питання", type="primary", use_container_width=True):
+        st.session_state.show_streak_dialog = False
+        st.rerun()
+
+
+def _on_restored_dialog_dismiss():
+    st.session_state.show_restored_dialog = False
+
+
+@st.dialog("🎉 Серію відновлено!", width="small", on_dismiss=_on_restored_dialog_dismiss)
+def _show_streak_restored_dialog(restored_streak: int):
+    st.markdown(
+        f"""
+        <div style="text-align: center; padding: 0.25rem 0 0.5rem;">
+          <div style="font-size: 3.2rem; line-height: 1; margin-bottom: 0.75rem;">⚡</div>
+          <h2 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem; color: #4caf50;">
+            Серію відновлено!
+          </h2>
+          <p style="font-size: 1rem; color: #d0d0d0; line-height: 1.5; margin-bottom: 1.25rem;">
+            Ви успішно пройшли 2 запитання та повернули свою серію: <b>{restored_streak} дн.</b>!
+          </p>
+          <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.35); border-radius: 12px; padding: 0.9rem; margin-bottom: 1rem;">
+            <span style="color: #81c784; font-weight: 600; font-size: 0.9rem;">
+              Продовжуйте щоденні тренування, щоб примножувати свій прогрес!
+            </span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if st.button("Чудово, продовжити!", type="primary", use_container_width=True):
+        st.session_state.show_restored_dialog = False
+        st.rerun()
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -737,6 +908,7 @@ def _save_answer_to_cache(topic_key, idx):
 def _add_badge(badge: str):
     if badge not in st.session_state.badges:
         st.session_state.badges.append(badge)
+        _persist_user_stats()
 
 
 def _award_xp(points: int, score: int | None = None):
@@ -752,6 +924,7 @@ def _award_xp(points: int, score: int | None = None):
         _add_badge("⟡ Серія 10")
     if len(st.session_state.history) >= 1 and "◈ Перші кроки" not in st.session_state.badges:
         _add_badge("◈ Перші кроки")
+    _persist_user_stats()
 
 
 def _topic_color(topic: str) -> str:
@@ -763,10 +936,17 @@ def _load_progress_from_disk() -> dict:
 
 
 # ── Hero header ───────────────────────────────────────────────────────────────
+admin_badge = (
+    '<span style="font-size:0.7rem; background:rgba(255,255,255,0.12); '
+    'border:1px solid rgba(255,255,255,0.25); border-radius:4px; padding:2px 6px; '
+    'margin-left:8px; vertical-align:middle; font-weight:700; letter-spacing:0.05em;">ADMIN</span>'
+    if _IS_ADMIN else ''
+)
+
 st.markdown(f"""
 <div class="hero">
   <h1 class="hero-title">◈ AI Interview Simulator</h1>
-  <p class="hero-subtitle" style="font-size:0.9rem;margin-top:0.25rem;">Вітаємо, <b>{_USERNAME}</b></p>
+  <p class="hero-subtitle" style="font-size:0.9rem;margin-top:0.25rem;">Вітаємо, <b>{_USERNAME}</b>{admin_badge}</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -774,7 +954,10 @@ _col_logout_l, _col_logout_r = st.columns([5, 1])
 with _col_logout_r:
     if st.button("Вийти", icon=":material/logout:", use_container_width=True):
         for _k in ["user", "_cache_loaded", "cache", "question",
-                   "evaluation", "history", "q_index", "q_total"]:
+                   "evaluation", "history", "q_index", "q_total",
+                   "_stats_loaded", "streak", "xp", "level", "badges",
+                   "frozen_streak", "recovery_progress", "last_activity_date",
+                   "show_streak_dialog", "show_restored_dialog"]:
             st.session_state.pop(_k, None)
         st.rerun()
 
@@ -788,6 +971,13 @@ if st.session_state.badges:
 else:
     badges_html = "<span class='badge' style='opacity:0.4;'>—</span>"
 
+if st.session_state.frozen_streak > 0:
+    streak_val_html = f"<span style='color:#ff5252;'>0</span> <small style='font-size:0.55em;color:#ff8585;'>({st.session_state.frozen_streak} дн.)</small>"
+    streak_label_html = f"Серія (відновлення {st.session_state.recovery_progress}/2)"
+else:
+    streak_val_html = f"{st.session_state.streak} <small style='font-size:0.55em;color:#888;'>дн.</small>"
+    streak_label_html = "Серія"
+
 st.markdown(f"""
 <div class="stats-bar">
   <div class="stat-card">
@@ -799,8 +989,8 @@ st.markdown(f"""
     <span class="stat-label">XP</span>
   </div>
   <div class="stat-card">
-    <span class="stat-value">{st.session_state.streak}</span>
-    <span class="stat-label">Серія</span>
+    <span class="stat-value">{streak_val_html}</span>
+    <span class="stat-label">{streak_label_html}</span>
   </div>
   <div class="stat-card">
     <span class="stat-value">{len(st.session_state.badges)}</span>
@@ -809,6 +999,40 @@ st.markdown(f"""
 </div>
 <div class="badges-row">{badges_html}</div>
 """, unsafe_allow_html=True)
+
+if st.session_state.frozen_streak > 0:
+    col_alert_txt, col_alert_btn = st.columns([5, 1])
+    with col_alert_txt:
+        st.markdown(
+            f"""
+            <div class="streak-recovery-alert">
+              <div class="streak-recovery-content">
+                <span class="streak-recovery-icon">🔥</span>
+                <div>
+                  <div class="streak-recovery-title">Ваша серія згоріла!</div>
+                  <div class="streak-recovery-desc">
+                    Пройдіть <b>2 питання</b>, щоб відновити серію на якій зупинилися (<b>{st.session_state.frozen_streak} дн.</b>).
+                  </div>
+                </div>
+              </div>
+              <div class="streak-progress-pill">
+                ⚡ Прогрес: {st.session_state.recovery_progress} / 2
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col_alert_btn:
+        if st.button("Поп-ап", icon=":material/visibility:", use_container_width=True, help="Відкрити вікно відновлення"):
+            st.session_state.show_streak_dialog = True
+            st.rerun()
+
+# ── Trigger streak dialogs if requested ──────────────────────────────────────
+if st.session_state.get("show_streak_dialog") and st.session_state.frozen_streak > 0:
+    _show_streak_burned_dialog(st.session_state.frozen_streak, st.session_state.recovery_progress)
+
+if st.session_state.get("show_restored_dialog"):
+    _show_streak_restored_dialog(st.session_state.streak)
 
 # ── Topic selector + progress sidebar ─────────────────────────────────────────
 col_topic, col_progress = st.columns([3, 1])
@@ -921,8 +1145,20 @@ if st.session_state.question:
                         "answer": answer_text,
                         "evaluation": result,
                     })
+                    # ── Daily streak & recovery tracking ─────────────────────
+                    curr_stats = {
+                        "streak": st.session_state.streak,
+                        "last_activity_date": st.session_state.last_activity_date,
+                        "frozen_streak": st.session_state.frozen_streak,
+                        "recovery_progress": st.session_state.recovery_progress,
+                    }
+                    new_stats, events = record_question_completion(curr_stats)
+                    st.session_state.streak = new_stats["streak"]
+                    st.session_state.last_activity_date = new_stats["last_activity_date"]
+                    st.session_state.frozen_streak = new_stats["frozen_streak"]
+                    st.session_state.recovery_progress = new_stats["recovery_progress"]
+
                     # Gamification
-                    st.session_state.streak += 1
                     score = result.get("score", 0)
                     points = 10
                     if score >= 7:
@@ -930,6 +1166,19 @@ if st.session_state.question:
                     if score >= 9:
                         points += 50
                     _award_xp(points, score)
+                    _persist_user_stats()
+
+                    # Trigger recovery toasts / dialogs
+                    if events.get("recovered"):
+                        st.session_state.show_restored_dialog = True
+                    elif events.get("recovery_step"):
+                        step = events["recovery_step"]
+                        st.toast(f"⚡ Пройдено {step} з 2 питань для відновлення серії!", icon="🔥")
+                    elif events.get("new_day_increment"):
+                        st.toast(f"🔥 Щоденну серію продовжено: {st.session_state.streak} дн.!", icon="🔥")
+                    elif events.get("first_day"):
+                        st.toast("🔥 Початок нової щоденної серії: 1 день!", icon="🔥")
+
                     st.rerun()
                 except ValueError as e:
                     st.error(str(e))
@@ -941,7 +1190,6 @@ if st.session_state.question:
         st.session_state.cache.pop(_cache_key(topic, idx), None)
         delete_answer(_USER_ID, topic, idx)
         st.session_state.evaluation = None
-        st.session_state.streak = 0
         st.session_state.answer_key += 1
         st.session_state[f"answer_{st.session_state.answer_key}"] = ""
         st.rerun()
@@ -1056,3 +1304,41 @@ if len(st.session_state.history) > 1:
               <div class="history-verdict" style="color:{color};">{ev.get('verdict', '')}</div>
             </div>
             """, unsafe_allow_html=True)
+
+# ── Admin Testing tools ──────────────────────────────────────────────────────
+if _IS_ADMIN:
+    with st.expander("🛠️ Адмін: Тестування щоденної серії", expanded=False):
+        st.caption("Цей блок доступний лише під акаунтом адміністратора для перевірки згоряння та відновлення серії.")
+        c_dev1, c_dev2, c_dev3 = st.columns(3)
+        if c_dev1.button("Симулювати згоряння серії"):
+            st.session_state.streak = 5
+            st.session_state.frozen_streak = 0
+            st.session_state.recovery_progress = 0
+            st.session_state.last_activity_date = (date.today() - timedelta(days=3)).isoformat()
+            curr = {
+                "streak": 5,
+                "last_activity_date": st.session_state.last_activity_date,
+                "frozen_streak": 0,
+                "recovery_progress": 0,
+            }
+            res, burned = evaluate_daily_streak_status(curr)
+            st.session_state.streak = res["streak"]
+            st.session_state.frozen_streak = res["frozen_streak"]
+            st.session_state.recovery_progress = res["recovery_progress"]
+            st.session_state.show_streak_dialog = True
+            _persist_user_stats()
+            st.rerun()
+        if c_dev2.button("Скинути серію до 0"):
+            st.session_state.streak = 0
+            st.session_state.frozen_streak = 0
+            st.session_state.recovery_progress = 0
+            st.session_state.last_activity_date = None
+            _persist_user_stats()
+            st.rerun()
+        if c_dev3.button("Встановити серію 5 дн. (сьогодні)"):
+            st.session_state.streak = 5
+            st.session_state.frozen_streak = 0
+            st.session_state.recovery_progress = 0
+            st.session_state.last_activity_date = date.today().isoformat()
+            _persist_user_stats()
+            st.rerun()
