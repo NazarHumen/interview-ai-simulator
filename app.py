@@ -6,7 +6,8 @@ import streamlit as st
 from services.gemini_client import evaluate_answer
 from services.question_bank import advance_question, get_current_question, \
     previous_question
-from services.supabase_client import AuthError, is_available as supabase_available, \
+from services.supabase_client import AuthError, \
+    is_available as supabase_available, \
     last_error as supabase_error, sign_in, sign_up
 from services.user_store import delete_answer, load_answers, load_progress, \
     save_answer
@@ -765,7 +766,6 @@ def _load_progress_from_disk() -> dict:
 st.markdown(f"""
 <div class="hero">
   <h1 class="hero-title">◈ AI Interview Simulator</h1>
-  <p class="hero-subtitle">Практикуйте технічні співбесіди з AI-оцінюванням · питання українською та англійською</p>
   <p class="hero-subtitle" style="font-size:0.9rem;margin-top:0.25rem;">Вітаємо, <b>{_USERNAME}</b></p>
 </div>
 """, unsafe_allow_html=True)
