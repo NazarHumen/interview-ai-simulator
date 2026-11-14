@@ -6,8 +6,12 @@ create table if not exists public.users (
     id uuid primary key default gen_random_uuid(),
     username text unique not null,
     password_hash text not null,
+    is_admin boolean not null default false,
     created_at timestamptz not null default now()
 );
+
+-- In case public.users already exists without is_admin:
+alter table public.users add column if not exists is_admin boolean not null default false;
 
 -- Saved answers per user per (topic, question index)
 create table if not exists public.user_answers (
@@ -28,6 +32,19 @@ create table if not exists public.user_progress (
     current_idx integer not null default 0,
     updated_at timestamptz not null default now(),
     primary key (user_id, topic)
+);
+
+-- User stats & daily streak
+create table if not exists public.user_stats (
+    user_id uuid primary key references public.users(id) on delete cascade,
+    streak integer not null default 0,
+    last_activity_date date,
+    frozen_streak integer not null default 0,
+    recovery_progress integer not null default 0,
+    xp integer not null default 0,
+    level integer not null default 1,
+    badges jsonb not null default '[]'::jsonb,
+    updated_at timestamptz not null default now()
 );
 
 -- Helpful indexes
