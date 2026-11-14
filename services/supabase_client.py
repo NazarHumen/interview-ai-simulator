@@ -97,8 +97,27 @@ def _normalize_username(username: str) -> str:
     return username.strip().lower()
 
 
+def is_admin_user(user: Optional[dict]) -> bool:
+    """Check if the given user has admin privileges.
+    
+    A user is considered admin if:
+    - user.get('is_admin') is True, OR
+    - user['username'] is 'admin', OR
+    - user['username'] is listed in ADMIN_USERNAMES env var / st.secrets (comma-separated).
+    """
+    if not user or not user.get("username"):
+        return False
+    if user.get("is_admin"):
+        return True
+
+    username = _normalize_username(str(user.get("username")))
+    admin_list_raw = _get_secret("ADMIN_USERNAMES") or "admin"
+    admin_usernames = {u.strip().lower() for u in admin_list_raw.split(",") if u.strip()}
+    return username in admin_usernames
+
+
 def sign_up(username: str, password: str) -> dict:
-    """Create a new user. Returns {'id', 'username'}. Raises AuthError."""
+    """Create a new user. Returns {'id', 'username', 'is_admin'}. Raises AuthError."""
     client = get_client()
     if client is None:
         raise AuthError("Supabase не налаштовано.")
@@ -123,25 +142,45 @@ def sign_up(username: str, password: str) -> dict:
     if not res.data:
         raise AuthError("Не вдалося створити користувача.")
     row = res.data[0]
-    return {"id": row["id"], "username": row["username"]}
+    user_data = {"id": row["id"], "username": row["username"]}
+    user_data["is_admin"] = is_admin_user(user_data)
+    return user_data
 
 
 def sign_in(username: str, password: str) -> dict:
-    """Verify credentials. Returns {'id', 'username'}. Raises AuthError."""
+    """Verify credentials. Returns {'id', 'username', 'is_admin'}. Raises AuthError."""
     client = get_client()
     if client is None:
         raise AuthError("Supabase не налаштовано.")
     username = _normalize_username(username)
-    res = (
-        client.table("users")
-        .select("id, username, password_hash")
-        .eq("username", username)
-        .limit(1)
-        .execute()
-    )
+    
+    # Try selecting with is_admin column if it exists in schema
+    try:
+        res = (
+            client.table("users")
+            .select("id, username, password_hash, is_admin")
+            .eq("username", username)
+            .limit(1)
+            .execute()
+        )
+    except Exception:
+        res = (
+            client.table("users")
+            .select("id, username, password_hash")
+            .eq("username", username)
+            .limit(1)
+            .execute()
+        )
+
     if not res.data:
         raise AuthError("Невірний username або пароль.")
     row = res.data[0]
     if not _verify_password(password, row["password_hash"]):
         raise AuthError("Невірний username або пароль.")
-    return {"id": row["id"], "username": row["username"]}
+    
+    user_data = {
+        "id": row["id"],
+        "username": row["username"],
+        "is_admin": bool(row.get("is_admin", False)) or is_admin_user({"username": row["username"]}),
+    }
+    return user_data
