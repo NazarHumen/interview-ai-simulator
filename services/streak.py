@@ -5,7 +5,8 @@ from datetime import date
 from typing import Any, Dict, Optional, Tuple
 
 
-def get_days_diff(last_date_str: Optional[str], current_date: Optional[date] = None) -> Optional[int]:
+def get_days_diff(last_date_str: Optional[str],
+                  current_date: Optional[date] = None) -> Optional[int]:
     """Return number of calendar days between last_date and current_date.
     
     Returns None if last_date_str is None or invalid.
@@ -22,8 +23,8 @@ def get_days_diff(last_date_str: Optional[str], current_date: Optional[date] = N
 
 
 def evaluate_daily_streak_status(
-    stats: Dict[str, Any],
-    current_date: Optional[date] = None,
+        stats: Dict[str, Any],
+        current_date: Optional[date] = None,
 ) -> Tuple[Dict[str, Any], bool]:
     """Check if the user's daily streak has burned.
     
@@ -62,8 +63,8 @@ def evaluate_daily_streak_status(
 
 
 def record_question_completion(
-    stats: Dict[str, Any],
-    current_date: Optional[date] = None,
+        stats: Dict[str, Any],
+        current_date: Optional[date] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Record an evaluated question for the daily streak.
     

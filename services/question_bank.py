@@ -13,7 +13,7 @@ def _load_bank() -> dict:
 
 
 def get_current_question(
-    topic: str, user_id: Optional[str] = None
+        topic: str, user_id: Optional[str] = None
 ) -> tuple[dict, int, int]:
     """Return (question_dict, current_index, total). Resumes from saved progress."""
     questions = _load_bank().get(topic, [])
@@ -24,7 +24,7 @@ def get_current_question(
 
 
 def advance_question(
-    topic: str, user_id: Optional[str] = None
+        topic: str, user_id: Optional[str] = None
 ) -> tuple[dict, int, int]:
     """Save next index and return (question_dict, new_index, total)."""
     questions = _load_bank().get(topic, [])
@@ -37,7 +37,7 @@ def advance_question(
 
 
 def previous_question(
-    topic: str, user_id: Optional[str] = None
+        topic: str, user_id: Optional[str] = None
 ) -> tuple[dict, int, int]:
     """Save previous index and return (question_dict, new_index, total)."""
     questions = _load_bank().get(topic, [])
