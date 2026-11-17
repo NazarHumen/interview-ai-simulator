@@ -272,43 +272,67 @@
     },
     {
       "en": "What are the basic concepts of OOP?",
-      "uk": "Які основні концепції ООП?"
-    },
-    {
-      "en": "What is Encapsulation?",
-      "uk": "Що таке інкапсуляція?"
-    },
-    {
-      "en": "What is Abstraction?",
-      "uk": "Що таке абстракція?"
-    },
-    {
-      "en": "What is method overriding?",
-      "uk": "Що таке перевизначення методів?"
-    },
-    {
-      "en": "What are the types of Inheritance in OOP?",
-      "uk": "Які є типи наслідування в ООП?"
-    },
-    {
-      "en": "What is an object?",
-      "uk": "Що таке об'єкт?"
-    },
-    {
-      "en": "What is a Method?",
-      "uk": "Що таке метод?"
+      "uk": "Які основні концепції (принципи) ООП?"
     },
     {
       "en": "What is a class?",
       "uk": "Що таке клас?"
     },
     {
+      "en": "What is an object?",
+      "uk": "Що таке об'єкт?"
+    },
+    {
       "en": "What are constructors?",
       "uk": "Що таке конструктори?"
     },
     {
+      "en": "What is a Method?",
+      "uk": "Що таке метод?"
+    },
+    {
+      "en": "What is the difference between staticmethod, classmethod, and property?",
+      "uk": "У чому різниця між staticmethod, classmethod та property?"
+    },
+    {
+      "en": "What is a descriptor?",
+      "uk": "Що таке дескриптор?"
+    },
+    {
+      "en": "What is the difference between Association, Aggregation, and Composition?",
+      "uk": "Асоціація vs Агрегація vs Композиція — у чому різниця?"
+    },
+    {
+      "en": "What is Encapsulation?",
+      "uk": "Що таке інкапсуляція?"
+    },
+    {
+      "en": "What is the difference between public, private and protected access modifiers?",
+      "uk": "У чому різниця між public, private та protected модифікаторами доступу?"
+    },
+    {
+      "en": "What is the difference between _ and __ in Python?",
+      "uk": "_ та __ в чому різниця?"
+    },
+    {
+      "en": "What is Abstraction?",
+      "uk": "Що таке абстракція?"
+    },
+    {
+      "en": "How to achieve data abstraction?",
+      "uk": "Як досягти абстракції даних?"
+    },
+    {
+      "en": "What is ABC and abstractmethod?",
+      "uk": "Що таке ABC та abstractmethod?"
+    },
+    {
       "en": "What is inheritance?",
       "uk": "Що таке наслідування?"
+    },
+    {
+      "en": "What are the types of Inheritance in OOP?",
+      "uk": "Які є типи наслідування в ООП?"
     },
     {
       "en": "What is multi-level inheritance?",
@@ -319,6 +343,10 @@
       "uk": "Що таке ієрархічне наслідування?"
     },
     {
+      "en": "What is MRO (Method Resolution Order) and the Diamond Problem?",
+      "uk": "Наслідування та (MRO & Diamond Problem)"
+    },
+    {
       "en": "What is super()?",
       "uk": "Що таке super()?"
     },
@@ -327,20 +355,24 @@
       "uk": "Що таке поліморфізм?"
     },
     {
+      "en": "What is method overriding?",
+      "uk": "Що таке перевизначення методів?"
+    },
+    {
       "en": "What is operator overloading?",
       "uk": "Що таке перевантаження операторів?"
     },
     {
-      "en": "What is the difference between public, private and protected access modifiers?",
-      "uk": "У чому різниця між public, private та protected модифікаторами доступу?"
+      "en": "How do __hash__ and __eq__ methods work?",
+      "uk": "Методи hash та equal (__hash__ та __eq__)"
     },
     {
-      "en": "How to achieve data abstraction?",
-      "uk": "Як досягти абстракції даних?"
+      "en": "What is the difference between Concurrency and Parallelism?",
+      "uk": "Конкурентність та Паралелізм"
     },
     {
-      "en": "What is ABC and abstractmethod?",
-      "uk": "Що таке ABC та abstractmethod?"
+      "en": "How does async/await (event loop) work?",
+      "uk": "async/await (подійний цикл)"
     }
   ],
   "Computer Science": [
@@ -455,6 +487,10 @@
     {
       "en": "What is an IP address?",
       "uk": "Що таке IP-адреса?"
+    },
+    {
+      "en": "How does async/await (event loop) work?",
+      "uk": "async/await (подійний цикл)"
     }
   ]
 }
