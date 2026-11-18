@@ -184,3 +184,39 @@ def sign_in(username: str, password: str) -> dict:
         "is_admin": bool(row.get("is_admin", False)) or is_admin_user({"username": row["username"]}),
     }
     return user_data
+
+
+def get_user_by_id(user_id: str) -> Optional[dict]:
+    """Fetch user by id. Returns {'id', 'username', 'is_admin'} or None."""
+    client = get_client()
+    if client is None:
+        return None
+    try:
+        try:
+            res = (
+                client.table("users")
+                .select("id, username, is_admin")
+                .eq("id", user_id)
+                .limit(1)
+                .execute()
+            )
+        except Exception:
+            res = (
+                client.table("users")
+                .select("id, username")
+                .eq("id", user_id)
+                .limit(1)
+                .execute()
+            )
+
+        if not res.data:
+            return None
+        row = res.data[0]
+        return {
+            "id": row["id"],
+            "username": row["username"],
+            "is_admin": bool(row.get("is_admin", False)) or is_admin_user({"username": row["username"]}),
+        }
+    except Exception:
+        return None
+
