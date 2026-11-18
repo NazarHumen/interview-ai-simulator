@@ -26,13 +26,16 @@ env/
 Thumbs.db
 
 # Streamlit
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
 
 # Progress (optional: remove this line if you want to track progress in git)
 data/progress.json
 
 # Per-user local fallback storage
 data/users/
+data/revoked_tokens.json
+data/.session_secret
 
 # Streamlit secrets (contain Supabase keys)
 .streamlit/secrets.toml
