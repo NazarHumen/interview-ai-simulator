@@ -1,0 +1,4 @@
+[server]
+headless = true
+# Keep in-memory sessions alive for 24 hours on disconnect/idle instead of default 2 minutes (120s)
+disconnectedSessionTTL = 86400
