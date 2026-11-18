@@ -7,10 +7,16 @@ Questions are shown in both **Ukrainian** and **English**. Answers and feedback 
 
 ```
 interview-simulator/
+├── .streamlit/
+│   └── config.toml               # Streamlit configuration (long-lived session TTL)
 ├── app.py                        # Streamlit UI
 ├── services/
 │   ├── gemini_client.py          # Gemini API wrapper with model fallback
-│   └── question_bank.py          # Question bank logic and progress tracking
+│   ├── question_bank.py          # Question bank logic and progress tracking
+│   ├── session_manager.py        # Long-lived persistent user sessions (cookies/HMAC)
+│   ├── streak.py                 # Daily streak, XP and gamification tracking
+│   ├── supabase_client.py        # Supabase client and auth
+│   └── user_store.py             # User stats and answers persistence
 ├── data/
 │   ├── topics.json               # Topic list with bilingual labels
 │   ├── questions_bank.json       # All questions (en + uk) per topic
@@ -73,6 +79,13 @@ The app tries models in this order and automatically falls back if one is unavai
 ```
 gemini-2.5-flash → gemini-2.0-flash → gemini-2.0-flash-lite → gemma-3-12b-it → gemma-3-4b-it
 ```
+
+## User Sessions & Persistence
+
+- **Long-lived sessions:** Users stay logged in for up to 15 days thanks to HMAC-SHA256 signed session tokens.
+- **Storage layers:** Session tokens are stored in browser cookies (via `st.context.cookies`), with automatic fallback to `localStorage` and query parameters (`?session=...`).
+- **Disconnection TTL:** `.streamlit/config.toml` sets `server.disconnectedSessionTTL = 86400` (24h) to prevent state drops on tab idle or laptop sleep.
+- **Security:** Tokens are cryptographically signed, verified against user records, and revocable on logout.
 
 ## Extending
 
