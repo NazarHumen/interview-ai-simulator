@@ -7,6 +7,13 @@ import streamlit as st
 from services.gemini_client import evaluate_answer
 from services.question_bank import advance_question, get_current_question, \
     previous_question
+from services.session_manager import (
+    create_session_token,
+    get_browser_session_token,
+    render_session_sync,
+    revoke_session_token,
+    verify_session_token,
+)
 from services.streak import evaluate_daily_streak_status, record_question_completion
 from services.supabase_client import AuthError, \
     is_admin_user, \
@@ -642,6 +649,14 @@ div[data-testid="stHorizontalBlock"] > div:nth-child(2) div[data-testid="stButto
   font-size: 0.8rem;
   font-style: italic;
 }
+iframe[height="0"], iframe[height="0px"],
+div[data-testid="stIFrame"]:has(iframe[height="0"]),
+div[data-testid="stIFrame"]:has(iframe[height="0px"]) {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 </style>
 """
 st.markdown(_CSS, unsafe_allow_html=True)
@@ -659,13 +674,43 @@ for key, default in [
     ("show_streak_dialog", False),
     ("show_restored_dialog", False),
     ("_stats_loaded", False),
+    ("session_token", None),
+    ("_sync_cookie_token", None),
+    ("_sync_cookie_days", 15),
+    ("_clear_cookie", False),
 ]:
     if key not in st.session_state:
         st.session_state[key] = default
 
+# ── Auto-restore persistent session ───────────────────────────────────────────
+if st.session_state.user is None and not st.session_state.get("_clear_cookie"):
+    _existing_token = get_browser_session_token()
+    if _existing_token:
+        _recovered_user = verify_session_token(_existing_token)
+        if _recovered_user:
+            st.session_state.user = _recovered_user
+            st.session_state.session_token = _existing_token
+            st.session_state._cache_loaded = False
+            st.session_state._stats_loaded = False
+            if hasattr(st, "query_params") and st.query_params.get("session") != _existing_token:
+                st.query_params["session"] = _existing_token
+        else:
+            revoke_session_token(_existing_token)
+            if hasattr(st, "query_params") and "session" in st.query_params:
+                del st.query_params["session"]
+            st.session_state._clear_cookie = True
+
 
 # ── Auth screen ───────────────────────────────────────────────────────────────
 def _render_auth_screen():
+    # Sync removal if user just logged out
+    if st.session_state.get("_clear_cookie"):
+        render_session_sync(clear=True)
+        st.session_state._clear_cookie = False
+    else:
+        # Fallback check from localStorage in case cookies weren't sent yet
+        render_session_sync(restore_if_empty=True)
+
     # Центрована компактна картка: ліва/права колонки — порожні «поля»
     _l, _c, _r = st.columns([1, 1.2, 1])
     with _c:
@@ -700,6 +745,7 @@ def _render_auth_screen():
                 password = st.text_input("Пароль", type="password",
                                          key="login_password",
                                          placeholder="••••••••")
+                remember_me = st.checkbox("Запам'ятати мене (15 днів)", value=True, key="login_remember_me")
                 submitted = st.form_submit_button(
                     "Увійти", use_container_width=True,
                     icon=":material/login:",
@@ -707,9 +753,16 @@ def _render_auth_screen():
                 if submitted:
                     try:
                         user = sign_in(username, password)
+                        expiry_days = 15 if remember_me else 1
+                        token = create_session_token(user, expiry_days=expiry_days)
                         st.session_state.user = user
+                        st.session_state.session_token = token
+                        st.session_state._sync_cookie_token = token
+                        st.session_state._sync_cookie_days = expiry_days
                         st.session_state._cache_loaded = False
                         st.session_state.question = None
+                        if hasattr(st, "query_params"):
+                            st.query_params["session"] = token
                         st.rerun()
                     except AuthError as e:
                         st.error(str(e))
@@ -725,6 +778,7 @@ def _render_auth_screen():
                                          type="password",
                                          key="signup_password",
                                          placeholder="••••••••")
+                remember_me = st.checkbox("Запам'ятати мене (15 днів)", value=True, key="signup_remember_me")
                 submitted = st.form_submit_button(
                     "Створити акаунт", use_container_width=True,
                     icon=":material/person_add:",
@@ -732,9 +786,16 @@ def _render_auth_screen():
                 if submitted:
                     try:
                         user = sign_up(username, password)
+                        expiry_days = 15 if remember_me else 1
+                        token = create_session_token(user, expiry_days=expiry_days)
                         st.session_state.user = user
+                        st.session_state.session_token = token
+                        st.session_state._sync_cookie_token = token
+                        st.session_state._sync_cookie_days = expiry_days
                         st.session_state._cache_loaded = False
                         st.session_state.question = None
+                        if hasattr(st, "query_params"):
+                            st.query_params["session"] = token
                         st.success("Акаунт створено! Ви увійшли в систему.")
                         st.rerun()
                     except AuthError as e:
@@ -749,6 +810,14 @@ def _render_auth_screen():
 if st.session_state.user is None:
     _render_auth_screen()
     st.stop()
+
+# Synchronize session token to client cookie & localStorage if newly authenticated
+if st.session_state.get("_sync_cookie_token"):
+    render_session_sync(
+        token_to_set=st.session_state._sync_cookie_token,
+        expiry_days=st.session_state.get("_sync_cookie_days", 15),
+    )
+    st.session_state._sync_cookie_token = None
 
 _USER_ID = st.session_state.user["id"]
 _USERNAME = st.session_state.user["username"]
@@ -953,7 +1022,17 @@ st.markdown(f"""
 _col_logout_l, _col_logout_r = st.columns([5, 1])
 with _col_logout_r:
     if st.button("Вийти", icon=":material/logout:", use_container_width=True):
-        for _k in ["user", "_cache_loaded", "cache", "question",
+        _token_to_revoke = (
+            st.session_state.get("session_token")
+            or get_browser_session_token()
+        )
+        if _token_to_revoke:
+            revoke_session_token(_token_to_revoke)
+        if hasattr(st, "query_params") and "session" in st.query_params:
+            del st.query_params["session"]
+        st.session_state._clear_cookie = True
+        for _k in ["user", "session_token", "_sync_cookie_token", "_sync_cookie_days",
+                   "_cache_loaded", "cache", "question",
                    "evaluation", "history", "q_index", "q_total",
                    "_stats_loaded", "streak", "xp", "level", "badges",
                    "frozen_streak", "recovery_progress", "last_activity_date",
