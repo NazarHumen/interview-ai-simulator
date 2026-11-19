@@ -44,7 +44,7 @@ def _get_session_secret() -> bytes:
     secret = _get_secret("SESSION_SECRET")
     if secret:
         return secret.encode("utf-8")
-    
+
     supabase_key = _get_secret("SUPABASE_KEY")
     if supabase_key:
         return supabase_key.encode("utf-8")
@@ -139,7 +139,8 @@ def revoke_session_token(token: Optional[str]) -> None:
 
 
 # ── Token lifecycle ───────────────────────────────────────────────────────────
-def create_session_token(user: dict, expiry_days: int = DEFAULT_EXPIRY_DAYS) -> str:
+def create_session_token(user: dict,
+                         expiry_days: int = DEFAULT_EXPIRY_DAYS) -> str:
     """Generate a signed HMAC session token valid for `expiry_days`."""
     now = int(time.time())
     exp = now + int(max(1, expiry_days) * 86400)
@@ -152,7 +153,8 @@ def create_session_token(user: dict, expiry_days: int = DEFAULT_EXPIRY_DAYS) -> 
     }
     payload_bytes = json.dumps(payload, separators=(",", ":")).encode("utf-8")
     payload_b64 = _b64encode(payload_bytes)
-    sig = hmac.new(_get_session_secret(), payload_b64.encode("ascii"), hashlib.sha256).digest()
+    sig = hmac.new(_get_session_secret(), payload_b64.encode("ascii"),
+                   hashlib.sha256).digest()
     sig_b64 = _b64encode(sig)
     return f"{payload_b64}.{sig_b64}"
 
@@ -243,10 +245,10 @@ def get_browser_session_token() -> Optional[str]:
 
 
 def render_session_sync(
-    token_to_set: Optional[str] = None,
-    clear: bool = False,
-    restore_if_empty: bool = False,
-    expiry_days: int = DEFAULT_EXPIRY_DAYS,
+        token_to_set: Optional[str] = None,
+        clear: bool = False,
+        restore_if_empty: bool = False,
+        expiry_days: int = DEFAULT_EXPIRY_DAYS,
 ) -> None:
     """Render client-side JavaScript to sync cookies, localStorage and query params."""
     if st is None:
