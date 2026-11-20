@@ -76,7 +76,8 @@ def last_error() -> Optional[str]:
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 def _hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode(
+        "utf-8")
 
 
 def _verify_password(password: str, password_hash: str) -> bool:
@@ -112,7 +113,8 @@ def is_admin_user(user: Optional[dict]) -> bool:
 
     username = _normalize_username(str(user.get("username")))
     admin_list_raw = _get_secret("ADMIN_USERNAMES") or "admin"
-    admin_usernames = {u.strip().lower() for u in admin_list_raw.split(",") if u.strip()}
+    admin_usernames = {u.strip().lower() for u in admin_list_raw.split(",") if
+                       u.strip()}
     return username in admin_usernames
 
 
@@ -136,7 +138,8 @@ def sign_up(username: str, password: str) -> dict:
 
     res = (
         client.table("users")
-        .insert({"username": username, "password_hash": _hash_password(password)})
+        .insert(
+            {"username": username, "password_hash": _hash_password(password)})
         .execute()
     )
     if not res.data:
@@ -153,7 +156,7 @@ def sign_in(username: str, password: str) -> dict:
     if client is None:
         raise AuthError("Supabase не налаштовано.")
     username = _normalize_username(username)
-    
+
     # Try selecting with is_admin column if it exists in schema
     try:
         res = (
@@ -177,11 +180,12 @@ def sign_in(username: str, password: str) -> dict:
     row = res.data[0]
     if not _verify_password(password, row["password_hash"]):
         raise AuthError("Невірний username або пароль.")
-    
+
     user_data = {
         "id": row["id"],
         "username": row["username"],
-        "is_admin": bool(row.get("is_admin", False)) or is_admin_user({"username": row["username"]}),
+        "is_admin": bool(row.get("is_admin", False)) or is_admin_user(
+            {"username": row["username"]}),
     }
     return user_data
 
@@ -215,8 +219,8 @@ def get_user_by_id(user_id: str) -> Optional[dict]:
         return {
             "id": row["id"],
             "username": row["username"],
-            "is_admin": bool(row.get("is_admin", False)) or is_admin_user({"username": row["username"]}),
+            "is_admin": bool(row.get("is_admin", False)) or is_admin_user(
+                {"username": row["username"]}),
         }
     except Exception:
         return None
-

@@ -93,11 +93,11 @@ def load_answers(user_id: Optional[str]) -> dict:
 
 
 def save_answer(
-    user_id: Optional[str],
-    topic: str,
-    idx: int,
-    answer: str,
-    evaluation: Optional[dict],
+        user_id: Optional[str],
+        topic: str,
+        idx: int,
+        answer: str,
+        evaluation: Optional[dict],
 ) -> None:
     client = get_client() if user_id else None
     if client is not None:
@@ -117,7 +117,8 @@ def save_answer(
             pass
     answers_path, _ = _local_paths(user_id)
     cache = _read_json(answers_path)
-    cache[_cache_key(topic, idx)] = {"answer": answer, "evaluation": evaluation}
+    cache[_cache_key(topic, idx)] = {"answer": answer,
+                                     "evaluation": evaluation}
     _write_json(answers_path, cache)
 
 
@@ -154,14 +155,16 @@ def load_progress(user_id: Optional[str]) -> dict:
                 .eq("user_id", user_id)
                 .execute()
             )
-            return {r["topic"]: int(r["current_idx"]) for r in (res.data or [])}
+            return {r["topic"]: int(r["current_idx"]) for r in
+                    (res.data or [])}
         except Exception:
             pass
     _, progress_path = _local_paths(user_id)
     return _read_json(progress_path)
 
 
-def save_progress(user_id: Optional[str], topic: str, current_idx: int) -> None:
+def save_progress(user_id: Optional[str], topic: str,
+                  current_idx: int) -> None:
     client = get_client() if user_id else None
     if client is not None:
         try:
@@ -201,7 +204,8 @@ def load_user_stats(user_id: Optional[str]) -> dict:
         try:
             res = (
                 client.table("user_stats")
-                .select("streak, last_activity_date, frozen_streak, recovery_progress, xp, level, badges")
+                .select(
+                    "streak, last_activity_date, frozen_streak, recovery_progress, xp, level, badges")
                 .eq("user_id", user_id)
                 .limit(1)
                 .execute()
@@ -210,9 +214,12 @@ def load_user_stats(user_id: Optional[str]) -> dict:
                 row = res.data[0]
                 return {
                     "streak": int(row.get("streak") or 0),
-                    "last_activity_date": str(row["last_activity_date"]) if row.get("last_activity_date") else None,
+                    "last_activity_date": str(
+                        row["last_activity_date"]) if row.get(
+                        "last_activity_date") else None,
                     "frozen_streak": int(row.get("frozen_streak") or 0),
-                    "recovery_progress": int(row.get("recovery_progress") or 0),
+                    "recovery_progress": int(
+                        row.get("recovery_progress") or 0),
                     "xp": int(row.get("xp") or 0),
                     "level": int(row.get("level") or 1),
                     "badges": list(row.get("badges") or []),
@@ -242,7 +249,8 @@ def save_user_stats(user_id: Optional[str], stats: dict) -> None:
                     "streak": int(stats.get("streak") or 0),
                     "last_activity_date": stats.get("last_activity_date"),
                     "frozen_streak": int(stats.get("frozen_streak") or 0),
-                    "recovery_progress": int(stats.get("recovery_progress") or 0),
+                    "recovery_progress": int(
+                        stats.get("recovery_progress") or 0),
                     "xp": int(stats.get("xp") or 0),
                     "level": int(stats.get("level") or 1),
                     "badges": list(stats.get("badges") or []),
